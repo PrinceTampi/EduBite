@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduBite – 5 Minute Learning App. Microlearning made fun and effective.">
+  <title>EduBite – 5 Minute Learning</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #58CC02;
+      --primary-dark: #46a302;
+      --bg: #F7F7F7;
+      --white: #FFFFFF;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .splash-container {
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .logo-circle {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(145deg, #58CC02, #46a302);
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      box-shadow: 0 12px 40px rgba(88, 204, 2, 0.3);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    .logo-circle span {
+      font-size: 56px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+
+    .splash-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .splash-sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .loader-bar {
+      width: 200px;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      margin: 40px auto 0;
+      overflow: hidden;
+    }
+
+    .loader-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #58CC02, #7de836);
+      border-radius: 3px;
+      animation: load 1.8s ease-in-out forwards;
+    }
+
+    @keyframes load {
+      0% { width: 0%; }
+      60% { width: 70%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="logo-circle">
+      <span>🧠</span>
+    </div>
+    <h1 class="splash-title">EduBite</h1>
+    <p class="splash-sub">5 Minute Learning App</p>
+    <div class="loader-bar">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================
+       INDEX.HTML — Session Check & Redirect
+       ============================================ */
+
+    /**
+     * Seeds default data into localStorage if not present.
+     * Uses versioning to force re-seed when data structure changes.
+     */
+    function seedData() {
+      const DATA_VERSION = 'v4';
+      const currentVersion = localStorage.getItem('dataVersion');
+      const existingLessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+
+      // Seed default user (only if no users at all)
+      if (!localStorage.getItem('users')) {
+        const defaultUsers = [
+          {
+            id: 'user_default_001',
+            email: 'test@edubite.com',
+            password: '123456'
+          }
+        ];
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+      }
+
+      // Re-seed if version changed OR if lessons are missing/empty
+      if (currentVersion !== DATA_VERSION || existingLessons.length === 0) {
+        seedLessons();
+        seedQuizzes();
+        migrateProgress();
+        localStorage.setItem('dataVersion', DATA_VERSION);
+      }
+    }
+
+    /**
+     * Migrates existing progress records to include new fields (energy, coins).
+     */
+    function migrateProgress() {
+      let allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
+      allProgress = allProgress.map(p => ({
+        ...p,
+        energy: p.energy !== undefined ? p.energy : 20,
+        coins: p.coins !== undefined ? p.coins : 0,
+        lastEnergyRefill: p.lastEnergyRefill || Date.now()
+      }));
+      localStorage.setItem('progress', JSON.stringify(allProgress));
+    }
+
+    /**
+     * Seeds lesson content.
+     */
+    function seedLessons() {
+        const lessons = [
+          // ===== SCIENCE (1-7) =====
+          {
+            id: 1,
+            title: 'The Solar System',
+            category: 'Science',
+            content: 'Our solar system consists of the Sun and everything that orbits it, including eight planets, dwarf planets, moons, asteroids, and comets. The four inner planets — Mercury, Venus, Earth, and Mars — are rocky, while the four outer planets — Jupiter, Saturn, Uranus, and Neptune — are gas and ice giants. Earth is the only planet known to support life, thanks to its liquid water, atmosphere, and magnetic field.',
+            dayNumber: 1
+          },
+          {
+            id: 2,
+            title: 'Photosynthesis Explained',
+            category: 'Science',
+            content: 'Photosynthesis is the process by which green plants, algae, and some bacteria convert light energy into chemical energy. Using sunlight, water (H₂O), and carbon dioxide (CO₂), plants produce glucose (C₆H₁₂O₆) and release oxygen (O₂) as a byproduct. This process occurs mainly in the chloroplasts of plant cells, where chlorophyll absorbs light. Photosynthesis is essential for life on Earth — it produces the oxygen we breathe and forms the base of most food chains.',
+            dayNumber: 2
+          },
+          {
+            id: 3,
+            title: 'Introduction to DNA',
+            category: 'Science',
+            content: 'DNA (Deoxyribonucleic Acid) is the molecule that carries genetic instructions for the development, functioning, and reproduction of all living organisms. It has a double-helix structure, resembling a twisted ladder. The "rungs" of the ladder are made of base pairs: Adenine (A) pairs with Thymine (T), and Cytosine (C) pairs with Guanine (G). The sequence of these bases determine the genetic code that makes each organism unique.',
+            dayNumber: 3
+          },
+          {
+            id: 4,
+            title: 'The Water Cycle',
+            category: 'Science',
+            content: 'The water cycle describes how water moves continuously through Earth\'s systems. It begins with evaporation, where the sun heats surface water, turning it into vapor. This vapor rises and cools, forming clouds through condensation. When clouds become heavy, precipitation occurs as rain, snow, or hail. Water then collects in rivers, lakes, and oceans, or seeps into the ground as groundwater. The cycle repeats endlessly, sustaining ecosystems worldwide.',
+            dayNumber: 4
+          },
+          {
+            id: 5,
+            title: 'Basics of Electricity',
+            category: 'Science',
+            content: 'Electricity is the flow of electrons through a conductor, typically a wire. It is measured in volts (V), amperes (A), and watts (W). There are two types: Direct Current (DC), where electrons flow in one direction, and Alternating Current (AC), where electrons change direction periodically. AC is used in homes and businesses because it transmits efficiently over long distances. Components like resistors, capacitors, and transistors control electrical flow in circuits.',
+            dayNumber: 5
+          },
+          {
+            id: 6,
+            title: 'Human Memory Types',
+            category: 'Science',
+            content: 'Human memory is broadly classified into three types: Sensory Memory holds fleeting impressions from our senses for a few seconds. Short-Term Memory (or Working Memory) retains about 7 items for roughly 20–30 seconds, allowing us to process information actively. Long-Term Memory stores information indefinitely — it includes Explicit Memory (facts and events we consciously recall) and Implicit Memory (skills and habits we perform automatically). Sleep plays a critical role in consolidating short-term memories into long-term storage.',
+            dayNumber: 6
+          },
+          {
+            id: 7,
+            title: 'Atoms & Elements',
+            category: 'Science',
+            content: 'Everything in the universe is made of atoms — the smallest unit of matter that retains the properties of an element. An atom consists of a nucleus (containing protons and neutrons) surrounded by electrons orbiting in shells. The number of protons defines the element: Hydrogen has 1, Carbon has 6, Oxygen has 8. The Periodic Table organizes all 118 known elements by atomic number. Elements combine to form molecules — for example, two hydrogen atoms and one oxygen atom make water (H₂O).',
+            dayNumber: 7
+          },
+
+          // ===== IT / TECHNOLOGY (8-14) =====
+          {
+            id: 8,
+            title: 'How the Internet Works',
+            category: 'IT',
+            content: 'The internet is a global network of interconnected computers that communicate using standardized protocols like TCP/IP. When you visit a website, your browser sends a request to a DNS server to translate the domain name into an IP address. The request travels through routers and switches to reach the destination server, which sends back the requested data in small packets. These packets are reassembled by your browser to display the webpage. The World Wide Web (WWW) is just one service that runs on the internet, alongside email, file transfer, and streaming.',
+            dayNumber: 8
+          },
+          {
+            id: 9,
+            title: 'HTML & CSS Fundamentals',
+            category: 'IT',
+            content: 'HTML (HyperText Markup Language) is the backbone of every webpage. It uses tags like <h1>, <p>, and <div> to structure content into headings, paragraphs, and sections. CSS (Cascading Style Sheets) controls the visual presentation — colors, fonts, spacing, and layout. Together, HTML provides the skeleton and CSS provides the skin. Modern CSS features like Flexbox and Grid make it easy to create responsive layouts that adapt to different screen sizes. Every website you visit is built on this HTML + CSS foundation.',
+            dayNumber: 9
+          },
+          {
+            id: 10,
+            title: 'Introduction to Python',
+            category: 'IT',
+            content: 'Python is one of the most popular programming languages in the world, known for its clean and readable syntax. Created by Guido van Rossum in 1991, Python uses indentation instead of braces to define code blocks. It supports multiple paradigms: procedural, object-oriented, and functional programming. Python excels in data science, machine learning, web development (Django, Flask), and automation. Its vast library ecosystem (NumPy, Pandas, TensorFlow) makes it a go-to language for beginners and experts alike. Variables in Python are dynamically typed — you don\'t need to declare types explicitly.',
+            dayNumber: 10
+          },
+          {
+            id: 11,
+            title: 'Cybersecurity Basics',
+            category: 'IT',
+            content: 'Cybersecurity is the practice of protecting systems, networks, and data from digital attacks. Common threats include: Phishing (fake emails that trick you into revealing passwords), Malware (malicious software like viruses and ransomware), and DDoS attacks (overwhelming a server with traffic). Strong defenses include using complex passwords, enabling Two-Factor Authentication (2FA), keeping software updated, and using firewalls. Encryption converts data into unreadable code that only authorized parties can decrypt. The CIA Triad — Confidentiality, Integrity, and Availability — is the foundation of information security.',
+            dayNumber: 11
+          },
+          {
+            id: 12,
+            title: 'Databases Explained',
+            category: 'IT',
+            content: 'A database is an organized collection of data stored electronically. Relational databases (like MySQL and PostgreSQL) store data in tables with rows and columns, and use SQL (Structured Query Language) to query data. NoSQL databases (like MongoDB and Firebase) use flexible formats like JSON documents, key-value pairs, or graphs — ideal for unstructured data. Key concepts include: Primary Keys (unique identifiers for each record), Foreign Keys (linking tables together), and Indexes (speeding up searches). Most modern applications — from social media to banking — rely on databases to store and retrieve information.',
+            dayNumber: 12
+          },
+          {
+            id: 13,
+            title: 'What is Cloud Computing?',
+            category: 'IT',
+            content: 'Cloud computing delivers computing services — servers, storage, databases, networking, software — over the internet ("the cloud"). Instead of owning physical hardware, you rent resources from providers like AWS, Google Cloud, or Microsoft Azure. There are three main service models: IaaS (Infrastructure as a Service) provides virtual machines, PaaS (Platform as a Service) provides development platforms, and SaaS (Software as a Service) provides ready-to-use applications like Gmail or Dropbox. Cloud benefits include scalability, cost savings, and global accessibility. Most apps you use daily run on cloud infrastructure.',
+            dayNumber: 13
+          },
+          {
+            id: 14,
+            title: 'APIs and How They Work',
+            category: 'IT',
+            content: 'An API (Application Programming Interface) is a set of rules that allows different software applications to communicate with each other. Think of it as a waiter in a restaurant — you (the client) give your order (request) to the waiter (API), who delivers it to the kitchen (server) and brings back your food (response). REST APIs use HTTP methods: GET (retrieve data), POST (create data), PUT (update data), and DELETE (remove data). APIs return data usually in JSON format. Popular APIs include Google Maps, Twitter, and OpenWeather. APIs are the backbone of modern app integration.',
+            dayNumber: 14
+          },
+
+          // ===== LANGUAGE (15-18) =====
+          {
+            id: 15,
+            title: 'English Word Origins',
+            category: 'Language',
+            content: 'The English language is a fascinating blend of words borrowed from many languages over centuries. About 29% of English words come from Latin (e.g., "animal", "video", "exit"), 29% from French (e.g., "restaurant", "ballet", "café"), and 26% from Germanic roots (e.g., "house", "water", "bread"). Greek contributed scientific terms like "biology", "philosophy", and "democracy". English also borrows from Arabic ("algebra", "zero"), Japanese ("tsunami", "karaoke"), and Hindi ("jungle", "shampoo"). This rich mixing makes English one of the most vocabulary-rich languages with over 170,000 words in active use.',
+            dayNumber: 15
+          },
+          {
+            id: 16,
+            title: 'Japanese Writing Systems',
+            category: 'Language',
+            content: 'Japanese uses three writing systems simultaneously: Hiragana, Katakana, and Kanji. Hiragana (ひらがな) consists of 46 characters representing syllables — used for native Japanese words and grammar. Katakana (カタカナ) also has 46 characters but is used for foreign loanwords, scientific terms, and emphasis (e.g., コーヒー = "kōhī" = coffee). Kanji (漢字) are Chinese characters adopted into Japanese — there are about 2,136 commonly used Kanji. A typical Japanese sentence mixes all three systems. For example: "私はコーヒーを飲みます" uses Kanji (私, 飲), Hiragana (は, を, みます), and Katakana (コーヒー).',
+            dayNumber: 16
+          },
+          {
+            id: 17,
+            title: 'Spanish for Beginners',
+            category: 'Language',
+            content: 'Spanish is the world\'s second most spoken native language with over 480 million native speakers across 20+ countries. Unlike English, Spanish is phonetic — words are pronounced exactly as they are spelled. Nouns have gender: "el libro" (the book, masculine) vs "la casa" (the house, feminine). Verbs conjugate based on the subject: "yo hablo" (I speak), "tú hablas" (you speak), "él habla" (he speaks). Common phrases include: "Hola" (Hello), "Gracias" (Thank you), "Por favor" (Please), "¿Cómo estás?" (How are you?). Spanish and English share many cognates — words that look similar: "hospital", "familia", "información".',
+            dayNumber: 17
+          },
+          {
+            id: 18,
+            title: 'How Languages Evolve',
+            category: 'Language',
+            content: 'Languages are living systems that constantly change over time. Linguists study how languages evolve through: Sound changes (English "knight" was once pronounced with a hard K), Semantic shifts (the word "nice" originally meant "foolish" in the 13th century), and Borrowing (Japanese "アルバイト" comes from German "Arbeit"). Languages are grouped into families — Indo-European is the largest, including English, Spanish, Hindi, and Russian. New words are constantly created through technology ("selfie", "bluetooth", "google" as a verb). Languages can also die — about 40% of the world\'s 7,000 languages are endangered, with one disappearing roughly every two weeks.',
+            dayNumber: 18
+          },
+
+          // ===== NATURE (19-21) =====
+          {
+            id: 19,
+            title: 'Coral Reefs: Rainforests of the Sea',
+            category: 'Nature',
+            content: 'Coral reefs are underwater ecosystems built by colonies of tiny animals called coral polyps. Despite covering less than 1% of the ocean floor, coral reefs support about 25% of all marine species. The Great Barrier Reef in Australia is the largest, stretching over 2,300 kilometers. Corals have a symbiotic relationship with algae called zooxanthellae, which live inside their tissues and provide them with food through photosynthesis. When ocean temperatures rise, corals expel these algae, turning white — a process called coral bleaching. Climate change, ocean acidification, and pollution are the biggest threats to coral reefs worldwide.',
+            dayNumber: 19
+          },
+          {
+            id: 20,
+            title: 'Volcanoes: Earth\'s Fiery Giants',
+            category: 'Nature',
+            content: 'Volcanoes are openings in Earth\'s crust where molten rock (magma), gases, and ash escape from below the surface. When magma reaches the surface, it\'s called lava. There are three main types: Shield volcanoes (broad and flat, like Mauna Loa in Hawaii), Stratovolcanoes (steep and explosive, like Mount Fuji), and Cinder Cone volcanoes (small and short-lived). Most volcanoes are found along the "Ring of Fire" — a 40,000 km horseshoe-shaped zone around the Pacific Ocean. Volcanic eruptions can be devastating, but they also create fertile soil and new land. Iceland, for example, grows by about 5 cm per year due to volcanic activity.',
+            dayNumber: 20
+          },
+          {
+            id: 21,
+            title: 'Tropical Rainforests',
+            category: 'Nature',
+            content: 'Tropical rainforests are the most biodiverse ecosystems on Earth, home to over 50% of all plant and animal species despite covering only 6% of Earth\'s surface. The Amazon Rainforest is the largest, spanning 5.5 million square kilometers across nine countries. Rainforests have four layers: the Emergent Layer (tallest trees reaching 60m+), the Canopy (dense umbrella of treetops), the Understory (small trees and shrubs in dim light), and the Forest Floor (decomposing leaves, fungi, and insects). Rainforests produce about 20% of the world\'s oxygen and act as massive carbon sinks. Deforestation — mainly for agriculture and logging — destroys an area equivalent to 40 football fields every minute.',
+            dayNumber: 21
+          }
+        ];
+        localStorage.setItem('lessons', JSON.stringify(lessons));
+    }
+
+    /**
+     * Seeds quiz questions.
+     */
+    function seedQuizzes() {
+        const quizzes = [
+          // ===== SCIENCE QUIZZES =====
+
+          // Lesson 1: The Solar System
+          { lessonId: 1, question: 'How many planets are in our solar system?', options: ['7', '8', '9', '10'], correctAnswer: '8' },
+          { lessonId: 1, question: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Saturn'], correctAnswer: 'Mars' },
+          { lessonId: 1, question: 'What type are the outer planets?', options: ['Rocky', 'Gas & Ice Giants', 'Dwarf', 'Metallic'], correctAnswer: 'Gas & Ice Giants' },
+
+          // Lesson 2: Photosynthesis
+          { lessonId: 2, question: 'What gas do plants release during photosynthesis?', options: ['Carbon Dioxide', 'Nitrogen', 'Oxygen', 'Hydrogen'], correctAnswer: 'Oxygen' },
+          { lessonId: 2, question: 'Where does photosynthesis mainly occur?', options: ['Mitochondria', 'Nucleus', 'Chloroplasts', 'Cell Wall'], correctAnswer: 'Chloroplasts' },
+          { lessonId: 2, question: 'What pigment absorbs light for photosynthesis?', options: ['Melanin', 'Chlorophyll', 'Carotene', 'Hemoglobin'], correctAnswer: 'Chlorophyll' },
+
+          // Lesson 3: Introduction to DNA
+          { lessonId: 3, question: 'What does DNA stand for?', options: ['Deoxyribonucleic Acid', 'Dioxyribonucleic Acid', 'Deoxyribonitric Acid', 'Dynamic Nuclear Acid'], correctAnswer: 'Deoxyribonucleic Acid' },
+          { lessonId: 3, question: 'Adenine (A) pairs with which base?', options: ['Cytosine', 'Guanine', 'Thymine', 'Uracil'], correctAnswer: 'Thymine' },
+          { lessonId: 3, question: 'What is the structure of DNA?', options: ['Single strand', 'Triple helix', 'Double helix', 'Circular'], correctAnswer: 'Double helix' },
+
+          // Lesson 4: The Water Cycle
+          { lessonId: 4, question: 'What drives evaporation in the water cycle?', options: ['Wind', 'Gravity', 'The Sun', 'Moon'], correctAnswer: 'The Sun' },
+          { lessonId: 4, question: 'Clouds form through which process?', options: ['Evaporation', 'Precipitation', 'Condensation', 'Filtration'], correctAnswer: 'Condensation' },
+          { lessonId: 4, question: 'Rain, snow, and hail are forms of ___?', options: ['Evaporation', 'Condensation', 'Precipitation', 'Transpiration'], correctAnswer: 'Precipitation' },
+
+          // Lesson 5: Basics of Electricity
+          { lessonId: 5, question: 'What type of current is used in homes?', options: ['DC', 'AC', 'Static', 'Pulse'], correctAnswer: 'AC' },
+          { lessonId: 5, question: 'Electricity is the flow of ___?', options: ['Protons', 'Neutrons', 'Electrons', 'Photons'], correctAnswer: 'Electrons' },
+          { lessonId: 5, question: 'Electrical power is measured in ___?', options: ['Volts', 'Amperes', 'Watts', 'Ohms'], correctAnswer: 'Watts' },
+
+          // Lesson 6: Human Memory Types
+          { lessonId: 6, question: 'How many items can short-term memory hold?', options: ['3', '5', '7', '12'], correctAnswer: '7' },
+          { lessonId: 6, question: 'Which memory type stores skills and habits?', options: ['Sensory', 'Explicit', 'Implicit', 'Short-term'], correctAnswer: 'Implicit' },
+          { lessonId: 6, question: 'What helps consolidate memories into long-term storage?', options: ['Exercise', 'Eating', 'Sleep', 'Reading'], correctAnswer: 'Sleep' },
+
+          // Lesson 7: Atoms & Elements
+          { lessonId: 7, question: 'What is the smallest unit of matter?', options: ['Molecule', 'Cell', 'Atom', 'Electron'], correctAnswer: 'Atom' },
+          { lessonId: 7, question: 'How many protons does Carbon have?', options: ['1', '6', '8', '12'], correctAnswer: '6' },
+          { lessonId: 7, question: 'What formula represents water?', options: ['CO₂', 'H₂O', 'O₂', 'NaCl'], correctAnswer: 'H₂O' },
+
+          // ===== IT QUIZZES =====
+
+          // Lesson 8: How the Internet Works
+          { lessonId: 8, question: 'What protocol suite does the internet primarily use?', options: ['HTTP/FTP', 'TCP/IP', 'SSH/SSL', 'SMTP/POP'], correctAnswer: 'TCP/IP' },
+          { lessonId: 8, question: 'What does DNS translate?', options: ['Files to data', 'Domain names to IP addresses', 'Images to text', 'Code to binary'], correctAnswer: 'Domain names to IP addresses' },
+          { lessonId: 8, question: 'Data travels the internet in small ___?', options: ['Bundles', 'Packets', 'Streams', 'Blocks'], correctAnswer: 'Packets' },
+
+          // Lesson 9: HTML & CSS Fundamentals
+          { lessonId: 9, question: 'What does HTML stand for?', options: ['Hyper Tool Markup Language', 'HyperText Markup Language', 'Home Text Making Language', 'HyperText Machine Language'], correctAnswer: 'HyperText Markup Language' },
+          { lessonId: 9, question: 'Which language controls visual styling of a webpage?', options: ['HTML', 'JavaScript', 'CSS', 'Python'], correctAnswer: 'CSS' },
+          { lessonId: 9, question: 'Which CSS feature is used for responsive layouts?', options: ['Float', 'Inline', 'Flexbox', 'Bold'], correctAnswer: 'Flexbox' },
+
+          // Lesson 10: Introduction to Python
+          { lessonId: 10, question: 'Who created Python?', options: ['Linus Torvalds', 'Guido van Rossum', 'James Gosling', 'Brendan Eich'], correctAnswer: 'Guido van Rossum' },
+          { lessonId: 10, question: 'Python uses ___ to define code blocks.', options: ['Braces {}', 'Brackets []', 'Indentation', 'Semicolons'], correctAnswer: 'Indentation' },
+          { lessonId: 10, question: 'Which is a Python web framework?', options: ['React', 'Angular', 'Django', 'Laravel'], correctAnswer: 'Django' },
+
+          // Lesson 11: Cybersecurity Basics
+          { lessonId: 11, question: 'What is phishing?', options: ['A type of virus', 'Fake emails to steal info', 'A firewall tool', 'A programming language'], correctAnswer: 'Fake emails to steal info' },
+          { lessonId: 11, question: 'What does 2FA stand for?', options: ['Two-File Access', 'Two-Factor Authentication', 'Two-Firewall Admin', 'Two-Format Algorithm'], correctAnswer: 'Two-Factor Authentication' },
+          { lessonId: 11, question: 'The CIA Triad stands for ___?', options: ['Code, Internet, Algorithm', 'Confidentiality, Integrity, Availability', 'Central Intelligence Agency', 'Computer, Interface, Application'], correctAnswer: 'Confidentiality, Integrity, Availability' },
+
+          // Lesson 12: Databases Explained
+          { lessonId: 12, question: 'SQL stands for ___?', options: ['Simple Query Logic', 'Structured Query Language', 'System Quality Layer', 'Standard Question List'], correctAnswer: 'Structured Query Language' },
+          { lessonId: 12, question: 'MongoDB is a ___ database.', options: ['Relational', 'NoSQL', 'Spreadsheet', 'Graph-only'], correctAnswer: 'NoSQL' },
+          { lessonId: 12, question: 'What uniquely identifies each record in a table?', options: ['Foreign Key', 'Index', 'Primary Key', 'Column'], correctAnswer: 'Primary Key' },
+
+          // Lesson 13: What is Cloud Computing?
+          { lessonId: 13, question: 'Which is NOT a major cloud provider?', options: ['AWS', 'Google Cloud', 'Microsoft Azure', 'Adobe Cloud'], correctAnswer: 'Adobe Cloud' },
+          { lessonId: 13, question: 'Gmail is an example of which cloud model?', options: ['IaaS', 'PaaS', 'SaaS', 'DaaS'], correctAnswer: 'SaaS' },
+          { lessonId: 13, question: 'IaaS provides ___?', options: ['Ready-to-use apps', 'Virtual machines', 'Email services', 'Social media'], correctAnswer: 'Virtual machines' },
+
+          // Lesson 14: APIs and How They Work
+          { lessonId: 14, question: 'What does API stand for?', options: ['App Programming Interface', 'Application Programming Interface', 'Auto Program Integration', 'Applied Process Interface'], correctAnswer: 'Application Programming Interface' },
+          { lessonId: 14, question: 'Which HTTP method retrieves data?', options: ['POST', 'PUT', 'DELETE', 'GET'], correctAnswer: 'GET' },
+          { lessonId: 14, question: 'APIs commonly return data in ___ format.', options: ['XML', 'CSV', 'JSON', 'HTML'], correctAnswer: 'JSON' },
+
+          // ===== LANGUAGE QUIZZES =====
+
+          // Lesson 15: English Word Origins
+          { lessonId: 15, question: 'What percentage of English words come from Latin?', options: ['10%', '29%', '50%', '75%'], correctAnswer: '29%' },
+          { lessonId: 15, question: 'The word "tsunami" is borrowed from ___?', options: ['Chinese', 'Korean', 'Japanese', 'Hindi'], correctAnswer: 'Japanese' },
+          { lessonId: 15, question: 'How many words are in active English use?', options: ['50,000', '100,000', '170,000+', '500,000'], correctAnswer: '170,000+' },
+
+          // Lesson 16: Japanese Writing Systems
+          { lessonId: 16, question: 'How many writing systems does Japanese use?', options: ['1', '2', '3', '4'], correctAnswer: '3' },
+          { lessonId: 16, question: 'Which system is used for foreign loanwords?', options: ['Hiragana', 'Katakana', 'Kanji', 'Romaji'], correctAnswer: 'Katakana' },
+          { lessonId: 16, question: 'Kanji characters originate from ___?', options: ['Korean', 'Japanese', 'Chinese', 'Sanskrit'], correctAnswer: 'Chinese' },
+
+          // Lesson 17: Spanish for Beginners
+          { lessonId: 17, question: 'How many native Spanish speakers are there?', options: ['100 million', '250 million', '480+ million', '1 billion'], correctAnswer: '480+ million' },
+          { lessonId: 17, question: '"Gracias" means ___ in English.', options: ['Hello', 'Goodbye', 'Please', 'Thank you'], correctAnswer: 'Thank you' },
+          { lessonId: 17, question: 'Spanish nouns have ___ (gender).', options: ['No gender', 'Masculine & Feminine', 'Three genders', 'Neutral only'], correctAnswer: 'Masculine & Feminine' },
+
+          // Lesson 18: How Languages Evolve
+          { lessonId: 18, question: 'What did "nice" originally mean in the 13th century?', options: ['Beautiful', 'Foolish', 'Rich', 'Kind'], correctAnswer: 'Foolish' },
+          { lessonId: 18, question: 'The largest language family is ___?', options: ['Sino-Tibetan', 'Afro-Asiatic', 'Indo-European', 'Austronesian'], correctAnswer: 'Indo-European' },
+          { lessonId: 18, question: 'About how many languages exist worldwide?', options: ['500', '2,000', '7,000', '15,000'], correctAnswer: '7,000' },
+
+          // ===== NATURE QUIZZES =====
+
+          // Lesson 19: Coral Reefs
+          { lessonId: 19, question: 'Coral reefs support about ___% of marine species.', options: ['5%', '10%', '25%', '50%'], correctAnswer: '25%' },
+          { lessonId: 19, question: 'What is coral bleaching caused by?', options: ['Cold water', 'Rising temperatures', 'Too much salt', 'Strong currents'], correctAnswer: 'Rising temperatures' },
+          { lessonId: 19, question: 'The Great Barrier Reef is in ___?', options: ['Brazil', 'Indonesia', 'Australia', 'Mexico'], correctAnswer: 'Australia' },
+
+          // Lesson 20: Volcanoes
+          { lessonId: 20, question: 'Magma that reaches the surface is called ___?', options: ['Ash', 'Lava', 'Pumice', 'Basalt'], correctAnswer: 'Lava' },
+          { lessonId: 20, question: 'Most volcanoes are along the ___?', options: ['Equator', 'Ring of Fire', 'Atlantic Ridge', 'Arctic Circle'], correctAnswer: 'Ring of Fire' },
+          { lessonId: 20, question: 'Mount Fuji is a ___ volcano.', options: ['Shield', 'Cinder Cone', 'Stratovolcano', 'Caldera'], correctAnswer: 'Stratovolcano' },
+
+          // Lesson 21: Tropical Rainforests
+          { lessonId: 21, question: 'Rainforests cover about ___% of Earth\'s surface.', options: ['2%', '6%', '15%', '30%'], correctAnswer: '6%' },
+          { lessonId: 21, question: 'The largest rainforest is the ___?', options: ['Congo', 'Borneo', 'Amazon', 'Daintree'], correctAnswer: 'Amazon' },
+          { lessonId: 21, question: 'How many layers does a rainforest have?', options: ['2', '3', '4', '5'], correctAnswer: '4' }
+        ];
+        localStorage.setItem('quizzes', JSON.stringify(quizzes));
+    }
+
+    /**
+     * Checks if a user session exists and redirects accordingly.
+     */
+    function checkSessionAndRedirect() {
+      const currentUser = localStorage.getItem('currentUser');
+      setTimeout(() => {
+        if (currentUser) {
+          window.location.href = 'home.html';
+        } else {
+          window.location.href = 'login.html';
+        }
+      }, 2000); // Allow splash animation to play
+    }
+
+    // Initialize
+    seedData();
+    checkSessionAndRedirect();
+  </script>
+</body>
+</html>

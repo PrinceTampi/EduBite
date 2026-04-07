@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduBite Home – Your daily learning dashboard with streaks, scores, and lessons.">
+  <title>Home – EduBite</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #58CC02;
+      --primary-dark: #46a302;
+      --primary-light: #d4f5b0;
+      --bg: #F7F7F7;
+      --white: #FFFFFF;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --radius: 16px;
+      --orange: #ff9500;
+      --orange-light: #fff3e0;
+      --blue: #3b82f6;
+      --blue-light: #eff6ff;
+      --purple: #8b5cf6;
+      --purple-light: #f5f3ff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding-bottom: 88px;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 420px;
+      padding: 0 16px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* ---- Top Bar ---- */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0 12px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .top-bar-logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .top-bar-logo span {
+      color: var(--primary);
+    }
+
+    .top-bar-streak {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange-light);
+      padding: 8px 14px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .top-bar-streak .flame {
+      font-size: 18px;
+    }
+
+    /* ---- Greeting ---- */
+    .greeting-section {
+      padding: 16px 0 24px;
+    }
+
+    .greeting-text {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    .greeting-sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* ---- Stats Grid ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:active {
+      transform: scale(0.97);
+    }
+
+    .stat-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .stat-card.coins-card {
+      background: linear-gradient(145deg, #fffbeb, #fef3c7);
+      border: 2px solid #fde68a;
+    }
+
+    .stat-card.score-card {
+      background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+      border: 2px solid #bbf7d0;
+    }
+
+    /* ---- Energy Bar ---- */
+    .energy-section {
+      margin-bottom: 24px;
+    }
+
+    .energy-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .energy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .energy-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .energy-label .bolt {
+      font-size: 20px;
+    }
+
+    .energy-count {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .energy-track {
+      height: 14px;
+      background: #e5e7eb;
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .energy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #58CC02, #7de836);
+      border-radius: 7px;
+      transition: width 0.6s ease;
+      position: relative;
+    }
+
+    .energy-fill.low {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    .energy-fill.medium {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .energy-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: rgba(255,255,255,0.25);
+      border-radius: 7px 7px 0 0;
+    }
+
+    .energy-refill {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* ---- No Energy Modal ---- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+
+    .modal-overlay.show .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(145deg, #58CC02, #4cb801);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .modal-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* ---- Daily Lesson CTA ---- */
+    .daily-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .daily-card {
+      background: linear-gradient(145deg, #58CC02, #46a302);
+      border-radius: 20px;
+      padding: 28px 24px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 32px rgba(88, 204, 2, 0.3);
+    }
+
+    .daily-card:active {
+      transform: scale(0.98);
+    }
+
+    .daily-card:hover {
+      box-shadow: 0 12px 40px rgba(88, 204, 2, 0.4);
+    }
+
+    .daily-card::after {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 120px;
+      height: 120px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    .daily-card::before {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: -20px;
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .daily-emoji {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .daily-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .daily-desc {
+      font-size: 14px;
+      opacity: 0.9;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .daily-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      color: var(--primary-dark);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .daily-btn:active {
+      transform: scale(0.95);
+    }
+
+    .daily-btn .arrow {
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+
+    .daily-card:hover .daily-btn .arrow {
+      transform: translateX(4px);
+    }
+
+    /* ---- Lesson List ---- */
+    .lessons-section {
+      margin-bottom: 24px;
+    }
+
+    .lesson-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      margin-bottom: 4px;
+    }
+
+    .category-header:first-child {
+      margin-top: 0;
+    }
+
+    .category-icon {
+      font-size: 22px;
+    }
+
+    .category-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .category-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+
+    .lesson-item {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.2s;
+      text-decoration: none;
+    }
+
+    .lesson-item:active {
+      transform: scale(0.98);
+    }
+
+    .lesson-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .lesson-num.completed {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .lesson-num.available {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .lesson-num.locked {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    .lesson-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lesson-info h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .lesson-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .lesson-status {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ---- Bottom Navigation ---- */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .bottom-nav-inner {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 0 8px;
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    .nav-item .nav-icon {
+      font-size: 24px;
+    }
+
+    .nav-item .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .nav-item.active .nav-label {
+      color: var(--primary);
+    }
+
+    .nav-item:not(.active) .nav-label {
+      color: var(--text-muted);
+    }
+
+    /* ---- Animations ---- */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-delay-1 { animation: slideUp 0.5s ease 0.1s both; }
+    .animate-delay-2 { animation: slideUp 0.5s ease 0.2s both; }
+    .animate-delay-3 { animation: slideUp 0.5s ease 0.3s both; }
+    .animate-delay-4 { animation: slideUp 0.5s ease 0.4s both; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="top-bar-logo">Edu<span>Bite</span></div>
+      <div class="top-bar-streak">
+        <span class="flame">🔥</span>
+        <span id="topStreak">0</span> day streak
+      </div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting-section animate-delay-1">
+      <h1 class="greeting-text" id="greetingText">Hello, Learner! 👋</h1>
+      <p class="greeting-sub">Ready for today's lesson?</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid animate-delay-2">
+      <div class="stat-card coins-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="coinsValue">0</div>
+        <div class="stat-label">Coins</div>
+      </div>
+      <div class="stat-card score-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value" id="scoreValue">0</div>
+        <div class="stat-label">Total Score</div>
+      </div>
+    </div>
+
+    <!-- Energy Bar -->
+    <div class="energy-section animate-delay-2">
+      <div class="energy-card">
+        <div class="energy-header">
+          <div class="energy-label"><span class="bolt">⚡</span> Energy</div>
+          <div class="energy-count" id="energyCount">20/20</div>
+        </div>
+        <div class="energy-track">
+          <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+        </div>
+        <div class="energy-refill" id="energyRefill"></div>
+      </div>
+    </div>
+
+    <!-- Daily Lesson CTA -->
+    <div class="daily-section animate-delay-3">
+      <h2 class="section-title">Today's Lesson</h2>
+      <div class="daily-card" id="dailyCard" onclick="startLesson()">
+        <div class="daily-emoji" id="dailyEmoji">📖</div>
+        <div class="daily-title" id="dailyTitle">Loading...</div>
+        <div class="daily-desc" id="dailyDesc">Tap to start your 5-minute lesson</div>
+        <button class="daily-btn">
+          Start Learning <span class="arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Lesson List -->
+    <div class="lessons-section animate-delay-4">
+      <h2 class="section-title">All Lessons</h2>
+      <div class="lesson-list" id="lessonList"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="home.html" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </a>
+      <a href="tutor.html" class="nav-item">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-label">AI Tutor</span>
+      </a>
+      <a href="profile.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- No Energy Modal -->
+  <div class="modal-overlay" id="noEnergyModal">
+    <div class="modal-card">
+      <div class="modal-icon">⚡</div>
+      <h2 class="modal-title">Not Enough Energy!</h2>
+      <p class="modal-desc">You need 5 energy to start a lesson. Energy regenerates 1 point every 10 minutes. Come back soon!</p>
+      <button class="modal-btn" onclick="closeNoEnergyModal()">Got It</button>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================
+       HOME.HTML — Dashboard
+       ============================================ */
+
+    /**
+     * Authentication guard — redirects to login if no session.
+     */
+    function checkAuth() {
+      const currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return null;
+      }
+      return JSON.parse(currentUser);
+    }
+
+    /**
+     * Gets user progress data from localStorage.
+     */
+    function getUserProgress(userId) {
+      const allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
+      return allProgress.find(p => p.userId === userId) || {
+        userId: userId,
+        completedLessons: [],
+        totalScore: 0,
+        streak: 0,
+        lastAccess: null,
+        energy: 20,
+        coins: 0,
+        lastEnergyRefill: Date.now()
+      };
+    }
+
+    /**
+     * Regenerates energy based on time elapsed.
+     * 1 energy per 10 minutes, max 20.
+     */
+    function regenerateEnergy(progress) {
+      const MAX_ENERGY = 20;
+      const REGEN_MS = 10 * 60 * 1000; // 10 minutes per energy
+      if (progress.energy >= MAX_ENERGY) {
+        progress.lastEnergyRefill = Date.now();
+        return progress;
+      }
+      const elapsed = Date.now() - (progress.lastEnergyRefill || Date.now());
+      const gained = Math.floor(elapsed / REGEN_MS);
+      if (gained > 0) {
+        progress.energy = Math.min(MAX_ENERGY, (progress.energy || 0) + gained);
+        progress.lastEnergyRefill = Date.now();
+        // Persist
+        let allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
+        const idx = allProgress.findIndex(p => p.userId === progress.userId);
+        if (idx !== -1) { allProgress[idx] = progress; }
+        localStorage.setItem('progress', JSON.stringify(allProgress));
+      }
+      return progress;
+    }
+
+    /**
+     * Deducts energy and saves to localStorage. Returns true if enough energy.
+     */
+    function consumeEnergy(userId, amount) {
+      let allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
+      const idx = allProgress.findIndex(p => p.userId === userId);
+      if (idx === -1) return false;
+      if ((allProgress[idx].energy || 0) < amount) return false;
+      allProgress[idx].energy -= amount;
+      allProgress[idx].lastEnergyRefill = allProgress[idx].lastEnergyRefill || Date.now();
+      localStorage.setItem('progress', JSON.stringify(allProgress));
+      return true;
+    }
+
+    /**
+     * Shows the no-energy modal.
+     */
+    function showNoEnergyModal() {
+      document.getElementById('noEnergyModal').classList.add('show');
+    }
+
+    /**
+     * Closes the no-energy modal.
+     */
+    function closeNoEnergyModal() {
+      document.getElementById('noEnergyModal').classList.remove('show');
+    }
+
+    /**
+     * Returns the time string until next energy refill.
+     */
+    function getNextRefillText(progress) {
+      const MAX_ENERGY = 20;
+      if ((progress.energy || 0) >= MAX_ENERGY) return '';
+      const REGEN_MS = 10 * 60 * 1000;
+      const elapsed = Date.now() - (progress.lastEnergyRefill || Date.now());
+      const remaining = REGEN_MS - (elapsed % REGEN_MS);
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      return `Next ⚡ in ${mins}m ${secs}s`;
+    }
+
+    /**
+     * Determines the greeting based on time of day.
+     */
+    function getTimeGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 17) return 'Good afternoon';
+      return 'Good evening';
+    }
+
+    /**
+     * Extracts username from email (before @).
+     */
+    function getUserName(email) {
+      const name = email.split('@')[0];
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+
+    /**
+     * Gets a lesson emoji based on its index.
+     */
+    function getLessonEmoji(index) {
+      const emojis = [
+        '🌍', '🌿', '🧬', '💧', '⚡', '🧠', '⚛️',   // Science 1-7
+        '🌐', '🖥️', '🐍', '🔐', '🗄️', '☁️', '🔌',   // IT 8-14
+        '📖', '🇯🇵', '🇪🇸', '🗣️',                       // Language 15-18
+        '🐠', '🌋', '🌴'                                // Nature 19-21
+      ];
+      return emojis[index % emojis.length];
+    }
+
+    /**
+     * Gets category info (icon + name) for a lesson.
+     */
+    function getCategoryInfo(category) {
+      const map = {
+        'Science': { icon: '🔬', name: 'Science' },
+        'IT': { icon: '💻', name: 'Technology' },
+        'Language': { icon: '🌍', name: 'Language' },
+        'Nature': { icon: '🌿', name: 'Nature' }
+      };
+      return map[category] || { icon: '📚', name: category || 'General' };
+    }
+
+    /**
+     * Determines the next available lesson for the user.
+     */
+    function getNextLesson(lessons, completedLessons) {
+      for (let i = 0; i < lessons.length; i++) {
+        if (!completedLessons.includes(lessons[i].id)) {
+          return lessons[i];
+        }
+      }
+      return null; // All lessons completed
+    }
+
+    /**
+     * Starts the daily lesson — navigates to lesson page.
+     */
+    function startLesson() {
+      const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const user = checkAuth();
+      if (!user) return;
+      let progress = getUserProgress(user.id);
+      progress = regenerateEnergy(progress);
+      const nextLesson = getNextLesson(lessons, progress.completedLessons);
+
+      if (nextLesson) {
+        // Check energy (costs 5 per lesson)
+        if ((progress.energy || 0) < 5) {
+          showNoEnergyModal();
+          return;
+        }
+        consumeEnergy(user.id, 5);
+        localStorage.setItem('currentLesson', JSON.stringify(nextLesson));
+        window.location.href = 'lesson.html';
+      }
+    }
+
+    /**
+     * Navigates to a specific lesson.
+     */
+    function goToLesson(lessonId) {
+      const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const lesson = lessons.find(l => l.id === lessonId);
+      if (lesson) {
+        const user = checkAuth();
+        if (!user) return;
+        let progress = getUserProgress(user.id);
+        progress = regenerateEnergy(progress);
+        if ((progress.energy || 0) < 5) {
+          showNoEnergyModal();
+          return;
+        }
+        consumeEnergy(user.id, 5);
+        localStorage.setItem('currentLesson', JSON.stringify(lesson));
+        window.location.href = 'lesson.html';
+      }
+    }
+
+    /**
+     * Renders the lesson list with completion status.
+     */
+    function renderLessonList(lessons, completedLessons) {
+      const container = document.getElementById('lessonList');
+      container.innerHTML = '';
+
+      let currentCategory = '';
+
+      lessons.forEach((lesson, index) => {
+        // Add category header when category changes
+        const lessonCategory = lesson.category || 'General';
+        if (lessonCategory !== currentCategory) {
+          currentCategory = lessonCategory;
+          const catInfo = getCategoryInfo(lessonCategory);
+          const header = document.createElement('div');
+          header.className = 'category-header';
+          header.innerHTML = `
+            <span class="category-icon">${catInfo.icon}</span>
+            <span class="category-name">${catInfo.name}</span>
+            <span class="category-line"></span>
+          `;
+          container.appendChild(header);
+        }
+
+        const isCompleted = completedLessons.includes(lesson.id);
+        const isNext = !isCompleted && (index === 0 || completedLessons.includes(lessons[index - 1].id));
+        const isLocked = !isCompleted && !isNext;
+
+        const item = document.createElement('div');
+        item.className = 'lesson-item';
+        if (!isLocked) {
+          item.onclick = () => goToLesson(lesson.id);
+        }
+
+        const statusClass = isCompleted ? 'completed' : isNext ? 'available' : 'locked';
+        const statusIcon = isCompleted ? '✅' : isNext ? '▶️' : '🔒';
+        const subtitle = isCompleted ? 'Completed' : isNext ? 'Available now' : 'Complete previous first';
+        const emoji = getLessonEmoji(index);
+
+        item.innerHTML = `
+          <div class="lesson-num ${statusClass}">${emoji}</div>
+          <div class="lesson-info">
+            <h3>${lesson.title}</h3>
+            <p>${subtitle}</p>
+          </div>
+          <span class="lesson-status">${statusIcon}</span>
+        `;
+
+        container.appendChild(item);
+      });
+    }
+
+    /**
+     * Initializes the home page with user data.
+     */
+    function initHome() {
+      const user = checkAuth();
+      if (!user) return;
+
+      let progress = getUserProgress(user.id);
+      progress = regenerateEnergy(progress);
+      const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const nextLesson = getNextLesson(lessons, progress.completedLessons);
+
+      // Greeting
+      const name = getUserName(user.email);
+      document.getElementById('greetingText').textContent = `${getTimeGreeting()}, ${name}! 👋`;
+
+      // Stats
+      document.getElementById('coinsValue').textContent = progress.coins || 0;
+      document.getElementById('scoreValue').textContent = progress.totalScore;
+      document.getElementById('topStreak').textContent = progress.streak;
+
+      // Energy bar
+      const energy = progress.energy || 0;
+      const maxEnergy = 20;
+      const energyPercent = (energy / maxEnergy) * 100;
+      document.getElementById('energyCount').textContent = `${energy}/${maxEnergy}`;
+      const fillEl = document.getElementById('energyFill');
+      fillEl.style.width = energyPercent + '%';
+      fillEl.className = 'energy-fill' + (energy <= 5 ? ' low' : energy <= 10 ? ' medium' : '');
+      const refillText = getNextRefillText(progress);
+      document.getElementById('energyRefill').textContent = refillText;
+
+      // Daily lesson
+      if (nextLesson) {
+        const lessonIndex = lessons.findIndex(l => l.id === nextLesson.id);
+        document.getElementById('dailyEmoji').textContent = getLessonEmoji(lessonIndex);
+        document.getElementById('dailyTitle').textContent = nextLesson.title;
+        document.getElementById('dailyDesc').textContent = `Day ${nextLesson.dayNumber} • Costs 5 ⚡ energy`;
+      } else {
+        document.getElementById('dailyEmoji').textContent = '🎉';
+        document.getElementById('dailyTitle').textContent = 'All Lessons Complete!';
+        document.getElementById('dailyDesc').textContent = 'Amazing work! You\'ve finished all available lessons.';
+        document.querySelector('.daily-btn').textContent = 'Review Lessons';
+      }
+
+      // Lesson list
+      renderLessonList(lessons, progress.completedLessons);
+    }
+
+    // Refresh energy timer every second
+    setInterval(() => {
+      const user = checkAuth();
+      if (!user) return;
+      let progress = getUserProgress(user.id);
+      progress = regenerateEnergy(progress);
+      const energy = progress.energy || 0;
+      const maxEnergy = 20;
+      document.getElementById('energyCount').textContent = `${energy}/${maxEnergy}`;
+      document.getElementById('energyFill').style.width = ((energy / maxEnergy) * 100) + '%';
+      document.getElementById('energyFill').className = 'energy-fill' + (energy <= 5 ? ' low' : energy <= 10 ? ' medium' : '');
+      document.getElementById('energyRefill').textContent = getNextRefillText(progress);
+    }, 1000);
+
+    // Safety: if no lessons exist, seed them directly here
+    (function ensureLessonsExist() {
+      const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      if (lessons.length === 0) {
+        // Emergency seed — redirect to index.html which handles full seeding
+        localStorage.removeItem('dataVersion');
+        window.location.href = 'index.html';
+        return;
+      }
+      // Initialize
+      initHome();
+    })();
+  </script>
+</body>
+</html>
