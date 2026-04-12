@@ -8,13 +8,27 @@
  * @module
  */
 
+import type * as chat from "../chat.js";
+import type * as lessons from "../lessons.js";
+import type * as progress from "../progress.js";
+import type * as quizzes from "../quizzes.js";
+import type * as seed from "../seed.js";
+import type * as users from "../users.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  chat: typeof chat;
+  lessons: typeof lessons;
+  progress: typeof progress;
+  quizzes: typeof quizzes;
+  seed: typeof seed;
+  users: typeof users;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
