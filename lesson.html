@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduBite Lesson – Learn something new in just 5 minutes.">
+  <title>Lesson – EduBite</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #58CC02;
+      --primary-dark: #46a302;
+      --primary-light: #d4f5b0;
+      --bg: #F7F7F7;
+      --white: #FFFFFF;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --radius: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 420px;
+      padding: 0 16px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* ---- Top Bar ---- */
+    .lesson-topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--white);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .back-btn:active {
+      transform: scale(0.92);
+    }
+
+    .back-btn:hover {
+      background: var(--border);
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      height: 10px;
+      background: var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #58CC02, #7de836);
+      border-radius: 5px;
+      width: 50%;
+      transition: width 0.6s ease;
+    }
+
+    .lesson-step {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ---- Lesson Header ---- */
+    .lesson-header {
+      text-align: center;
+      padding: 16px 0 32px;
+    }
+
+    .lesson-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .lesson-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    /* ---- Lesson Content ---- */
+    .lesson-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+    }
+
+    .lesson-icon-wrapper {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 24px;
+    }
+
+    .lesson-content {
+      font-size: 16px;
+      line-height: 1.75;
+      color: #374151;
+      font-weight: 450;
+    }
+
+    .lesson-content strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* ---- Key Points ---- */
+    .key-points {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 2px solid var(--bg);
+    }
+
+    .key-points h3 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .key-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+    }
+
+    .key-point-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .key-point-text {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* ---- Timer ---- */
+    .reading-timer {
+      text-align: center;
+      padding: 12px 0 24px;
+    }
+
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white);
+      padding: 10px 20px;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .timer-badge span {
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    /* ---- CTA Button ---- */
+    .lesson-cta {
+      padding: 0 0 40px;
+    }
+
+    .btn-quiz {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(145deg, #58CC02, #4cb801);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 6px 24px rgba(88, 204, 2, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-quiz:active {
+      transform: scale(0.97);
+    }
+
+    .btn-quiz:hover {
+      box-shadow: 0 8px 32px rgba(88, 204, 2, 0.45);
+    }
+
+    .btn-quiz .icon {
+      font-size: 22px;
+    }
+
+    /* ---- Animations ---- */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-delay-1 { animation: slideUp 0.5s ease 0.1s both; }
+    .animate-delay-2 { animation: slideUp 0.5s ease 0.2s both; }
+    .animate-delay-3 { animation: slideUp 0.5s ease 0.35s both; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Top Bar -->
+    <div class="lesson-topbar">
+      <button class="back-btn" onclick="window.location.href='home.html'" aria-label="Go back">←</button>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <span class="lesson-step" id="lessonStep">1/2</span>
+    </div>
+
+    <!-- Header -->
+    <div class="lesson-header animate-delay-1">
+      <div class="lesson-badge" id="lessonBadge">
+        📅 Day <span id="dayNum">1</span>
+      </div>
+      <h1 id="lessonTitle">Loading...</h1>
+    </div>
+
+    <!-- Content Card -->
+    <div class="lesson-card animate-delay-2">
+      <div class="lesson-icon-wrapper" id="lessonIconWrapper">📖</div>
+      <div class="lesson-content" id="lessonContent">
+        Loading lesson content...
+      </div>
+
+      <div class="key-points" id="keyPoints"></div>
+    </div>
+
+    <!-- Timer -->
+    <div class="reading-timer animate-delay-3">
+      <div class="timer-badge">
+        ⏱️ Estimated reading: <span>~2 min</span>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="lesson-cta animate-delay-3">
+      <button class="btn-quiz" onclick="goToQuiz()">
+        Take the Quiz <span class="icon">🎯</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================
+       LESSON.HTML — Lesson Content Display
+       ============================================ */
+
+    /**
+     * Authentication guard.
+     */
+    function checkAuth() {
+      const currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return null;
+      }
+      return JSON.parse(currentUser);
+    }
+
+    /**
+     * Gets an emoji for the current lesson topic.
+     */
+    function getLessonEmoji(lessonId) {
+      const emojis = {
+        1: '🌍', 2: '🌿', 3: '🧬', 4: '💧', 5: '⚡', 6: '🧠', 7: '⚛️',   // Science
+        8: '🌐', 9: '🖥️', 10: '🐍', 11: '🔐', 12: '🗄️', 13: '☁️', 14: '🔌', // IT
+        15: '📖', 16: '🇯🇵', 17: '🇪🇸', 18: '🗣️',                             // Language
+        19: '🐠', 20: '🌋', 21: '🌴'                                          // Nature
+      };
+      return emojis[lessonId] || '📚';
+    }
+
+    /**
+     * Extracts key points from lesson content for display.
+     * Takes the first 3 sentences as highlights.
+     */
+    function extractKeyPoints(content) {
+      const sentences = content.match(/[^.!?]+[.!?]+/g) || [];
+      const points = [];
+      const icons = ['💡', '🔑', '📌', '✨'];
+
+      // Pick key sentences (every other for variety)
+      for (let i = 0; i < Math.min(3, sentences.length); i++) {
+        const sentenceIndex = i === 0 ? 0 : Math.min(i * 2, sentences.length - 1);
+        points.push({
+          icon: icons[i % icons.length],
+          text: sentences[sentenceIndex].trim()
+        });
+      }
+      return points;
+    }
+
+    /**
+     * Renders key learning points.
+     */
+    function renderKeyPoints(points) {
+      const container = document.getElementById('keyPoints');
+      if (points.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      let html = '<h3>Key Takeaways</h3>';
+      points.forEach(point => {
+        html += `
+          <div class="key-point">
+            <div class="key-point-icon">${point.icon}</div>
+            <p class="key-point-text">${point.text}</p>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    /**
+     * Navigates to the quiz for the current lesson.
+     */
+    function goToQuiz() {
+      window.location.href = 'quiz.html';
+    }
+
+    /**
+     * Initializes the lesson page.
+     */
+    function initLesson() {
+      const user = checkAuth();
+      if (!user) return;
+
+      const lesson = JSON.parse(localStorage.getItem('currentLesson'));
+      if (!lesson) {
+        window.location.href = 'home.html';
+        return;
+      }
+
+      const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const totalLessons = lessons.length;
+      const currentIndex = lessons.findIndex(l => l.id === lesson.id);
+
+      // Update UI
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      document.getElementById('dayNum').textContent = lesson.dayNumber;
+      document.getElementById('lessonContent').textContent = lesson.content;
+      document.getElementById('lessonIconWrapper').textContent = getLessonEmoji(lesson.id);
+
+      // Progress bar (lesson is step 1, quiz is step 2)
+      document.getElementById('progressFill').style.width = '50%';
+      document.getElementById('lessonStep').textContent = `${currentIndex + 1}/${totalLessons}`;
+
+      // Key points
+      const keyPoints = extractKeyPoints(lesson.content);
+      renderKeyPoints(keyPoints);
+
+      // Estimate reading time
+      const wordCount = lesson.content.split(/\s+/).length;
+      const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
+      document.querySelector('.timer-badge span').textContent = `~${readingMinutes} min`;
+    }
+
+    // Initialize
+    initLesson();
+  </script>
+</body>
+</html>
