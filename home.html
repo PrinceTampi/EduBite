@@ -2,53 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="EduBite Home – Your daily learning dashboard with streaks, scores, and lessons.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="EduBite Home – Your gamified daily learning dashboard with streaks, XP, and an interactive learning path.">
   <title>Home – EduBite</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --primary: #58CC02;
       --primary-dark: #46a302;
+      --primary-darker: #3a8a01;
       --primary-light: #d4f5b0;
-      --bg: #F7F7F7;
+      --primary-glow: rgba(88, 204, 2, 0.35);
+      --bg: #F0F4F0;
       --white: #FFFFFF;
       --text: #1a1a2e;
       --text-muted: #6b7280;
       --border: #e5e7eb;
-      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
       --radius: 16px;
-      --orange: #ff9500;
-      --orange-light: #fff3e0;
-      --blue: #3b82f6;
-      --blue-light: #eff6ff;
-      --purple: #8b5cf6;
-      --purple-light: #f5f3ff;
+      --radius-lg: 24px;
+      --orange: #FF9500;
+      --orange-bright: #FF6B00;
+      --orange-light: #FFF3E0;
+      --blue: #1CB0F6;
+      --blue-light: #E6F7FF;
+      --purple: #CE82FF;
+      --purple-light: #F5ECFF;
+      --red: #FF4B4B;
+      --red-light: #FFECEC;
+      --gold: #FFC800;
+      --gold-light: #FFF9E0;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       display: flex;
       justify-content: center;
       min-height: 100vh;
       padding-bottom: 88px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .page {
       width: 100%;
       max-width: 420px;
       padding: 0 16px;
-      animation: fadeIn 0.4s ease;
     }
 
-    /* ---- Top Bar ---- */
+    /* ================= TOP BAR ================= */
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 0 12px;
+      padding: 16px 0 8px;
       position: sticky;
       top: 0;
       background: var(--bg);
@@ -56,469 +67,769 @@
     }
 
     .top-bar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-mascot {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(145deg, #58CC02, #46a302);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 22px;
-      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(88, 204, 2, 0.3);
+      animation: mascotBob 3s ease-in-out infinite;
+    }
+
+    @keyframes mascotBob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-3px) rotate(2deg); }
+      75% { transform: translateY(1px) rotate(-1deg); }
+    }
+
+    .logo-text {
+      font-size: 22px;
+      font-weight: 900;
       color: var(--text);
       letter-spacing: -0.5px;
     }
 
-    .top-bar-logo span {
-      color: var(--primary);
+    .logo-text span { color: var(--primary); }
+
+    .top-bar-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #CE82FF, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      border: 3px solid #fff;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
     }
 
-    .top-bar-streak {
+    /* ================= STATUS BAR (Duolingo-Style) ================= */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 8px;
+      margin: 8px 0 16px;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow-md);
+      gap: 4px;
+      animation: slideDown 0.5s ease both;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status-item {
       display: flex;
       align-items: center;
       gap: 6px;
+      padding: 6px 10px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .status-item:active { transform: scale(0.95); }
+
+    .status-item.streak {
       background: var(--orange-light);
-      padding: 8px 14px;
-      border-radius: 24px;
+    }
+    .status-item.energy {
+      background: var(--blue-light);
+    }
+    .status-item.coins {
+      background: var(--gold-light);
+    }
+    .status-item.score {
+      background: var(--purple-light);
+    }
+
+    .status-item .s-icon {
+      font-size: 20px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+
+    .status-item .s-value {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    /* ================= XP PROGRESS BAR ================= */
+    .xp-bar-section {
+      margin-bottom: 20px;
+      animation: slideUp 0.5s ease 0.1s both;
+    }
+
+    .xp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .xp-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .xp-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(145deg, var(--gold), #FFB800);
+      color: #1a1a2e;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(255, 200, 0, 0.3);
+    }
+
+    .xp-count {
+      font-size: 13px;
       font-weight: 700;
-      color: var(--orange);
+      color: var(--text-muted);
     }
 
-    .top-bar-streak .flame {
-      font-size: 18px;
+    .xp-track {
+      height: 16px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
     }
 
-    /* ---- Greeting ---- */
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FFC800, #FF9500);
+      border-radius: 10px;
+      transition: width 1s ease;
+      position: relative;
+      min-width: 24px;
+    }
+
+    .xp-fill::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      right: 4px;
+      height: 6px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, transparent 100%);
+      border-radius: 4px;
+    }
+
+    /* ================= GREETING ================= */
     .greeting-section {
-      padding: 16px 0 24px;
+      padding: 8px 0 20px;
+      animation: slideUp 0.5s ease 0.15s both;
     }
 
     .greeting-text {
-      font-size: 28px;
-      font-weight: 800;
+      font-size: 24px;
+      font-weight: 900;
       color: var(--text);
-      line-height: 1.2;
+      line-height: 1.25;
       letter-spacing: -0.5px;
     }
 
     .greeting-sub {
       font-size: 15px;
       color: var(--text-muted);
-      margin-top: 6px;
-      font-weight: 500;
-    }
-
-    /* ---- Stats Grid ---- */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow);
-      text-align: center;
-      transition: transform 0.2s;
-    }
-
-    .stat-card:active {
-      transform: scale(0.97);
-    }
-
-    .stat-icon {
-      font-size: 32px;
-      margin-bottom: 8px;
-    }
-
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .stat-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
       margin-top: 4px;
+      font-weight: 700;
     }
 
-    .stat-card.coins-card {
-      background: linear-gradient(145deg, #fffbeb, #fef3c7);
-      border: 2px solid #fde68a;
+    .greeting-sub .motivate {
+      color: var(--primary);
     }
 
-    .stat-card.score-card {
-      background: linear-gradient(145deg, #f0fdf4, #dcfce7);
-      border: 2px solid #bbf7d0;
-    }
-
-    /* ---- Energy Bar ---- */
-    .energy-section {
-      margin-bottom: 24px;
-    }
-
-    .energy-card {
+    /* ================= DAILY CHALLENGE ================= */
+    .daily-challenge {
       background: var(--white);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       padding: 20px;
-      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+      border-left: 5px solid var(--orange);
+      animation: slideUp 0.5s ease 0.2s both;
+      position: relative;
+      overflow: hidden;
     }
 
-    .energy-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
+    .daily-challenge::after {
+      content: '🔥';
+      position: absolute;
+      top: -4px;
+      right: 8px;
+      font-size: 56px;
+      opacity: 0.08;
     }
 
-    .energy-label {
+    .dc-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 15px;
-      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .dc-icon {
+      font-size: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .dc-title {
+      font-size: 17px;
+      font-weight: 900;
       color: var(--text);
     }
 
-    .energy-label .bolt {
-      font-size: 20px;
+    .dc-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .dc-progress-track {
+      height: 12px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .dc-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), var(--orange-bright));
+      border-radius: 8px;
+      transition: width 0.8s ease;
+      position: relative;
+    }
+
+    .dc-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      right: 4px;
+      height: 4px;
+      background: rgba(255,255,255,0.35);
+      border-radius: 3px;
+    }
+
+    .dc-progress-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-align: right;
+    }
+
+    /* ================= ENERGY CARD (compact) ================= */
+    .energy-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: slideUp 0.5s ease 0.25s both;
+    }
+
+    .energy-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .energy-info {
+      flex: 1;
+    }
+
+    .energy-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .energy-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
     }
 
     .energy-count {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--primary-dark);
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--blue);
     }
 
     .energy-track {
-      height: 14px;
+      height: 10px;
       background: #e5e7eb;
-      border-radius: 7px;
+      border-radius: 6px;
       overflow: hidden;
-      position: relative;
     }
 
     .energy-fill {
       height: 100%;
-      background: linear-gradient(90deg, #58CC02, #7de836);
-      border-radius: 7px;
+      background: linear-gradient(90deg, #1CB0F6, #49C7F8);
+      border-radius: 6px;
       transition: width 0.6s ease;
       position: relative;
-    }
-
-    .energy-fill.low {
-      background: linear-gradient(90deg, #ef4444, #f87171);
-    }
-
-    .energy-fill.medium {
-      background: linear-gradient(90deg, #f59e0b, #fbbf24);
     }
 
     .energy-fill::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: rgba(255,255,255,0.25);
-      border-radius: 7px 7px 0 0;
+      top: 1px;
+      left: 3px;
+      right: 3px;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px;
     }
 
-    .energy-refill {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-align: right;
-    }
+    .energy-fill.low { background: linear-gradient(90deg, #FF4B4B, #FF6B6B); }
+    .energy-fill.medium { background: linear-gradient(90deg, #FF9500, #FFAB40); }
 
-    /* ---- No Energy Modal ---- */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-
-    .modal-overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .modal-card {
-      background: var(--white);
-      border-radius: 24px;
-      padding: 32px 24px;
-      width: 100%;
-      max-width: 340px;
-      text-align: center;
-      transform: scale(0.9);
-      transition: transform 0.3s;
-    }
-
-    .modal-overlay.show .modal-card {
-      transform: scale(1);
-    }
-
-    .modal-icon {
-      font-size: 56px;
-      margin-bottom: 16px;
-    }
-
-    .modal-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .modal-desc {
-      font-size: 14px;
-      color: var(--text-muted);
-      font-weight: 500;
-      line-height: 1.5;
+    /* ================= LEARNING PATH (Duolingo-style) ================= */
+    .path-section {
       margin-bottom: 24px;
+      animation: slideUp 0.5s ease 0.3s both;
     }
 
-    .modal-btn {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(145deg, #58CC02, #4cb801);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .modal-btn:active {
-      transform: scale(0.97);
-    }
-
-    /* ---- Daily Lesson CTA ---- */
-    .daily-section {
-      margin-bottom: 24px;
-    }
-
-    .section-title {
+    .path-section-title {
       font-size: 18px;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--text);
-      margin-bottom: 16px;
+      margin-bottom: 24px;
+      text-align: center;
       letter-spacing: -0.3px;
     }
 
-    .daily-card {
+    .learning-path {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .path-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    /* SVG path connector */
+    .path-connector {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Path node */
+    .path-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .node-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      border: 4px solid transparent;
+    }
+
+    .node-circle:active { transform: scale(0.92); }
+
+    .node-circle.completed {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    .node-circle.current {
+      background: var(--white);
+      border: 5px solid var(--primary);
+      box-shadow: 0 0 0 6px var(--primary-glow), 0 8px 24px rgba(88,204,2,0.25);
+      animation: currentPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes currentPulse {
+      0%, 100% { box-shadow: 0 0 0 6px var(--primary-glow), 0 8px 24px rgba(88,204,2,0.25); }
+      50% { box-shadow: 0 0 0 12px rgba(88,204,2,0.15), 0 12px 32px rgba(88,204,2,0.35); }
+    }
+
+    .node-circle.locked {
+      background: #E5E7EB;
+      border-color: #D1D5DB;
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .node-circle.locked .node-emoji {
+      filter: grayscale(1);
+    }
+
+    .node-emoji {
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .node-check {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 26px;
+      height: 26px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border: 3px solid var(--white);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .node-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: center;
+      margin-top: 8px;
+      max-width: 100px;
+      line-height: 1.2;
+    }
+
+    .node-title.locked { color: #9ca3af; }
+
+    /* Curved line between nodes */
+    .path-line-segment {
+      width: 4px;
+      height: 32px;
+      border-radius: 2px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .path-line-segment.completed-line {
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+    }
+
+    .path-line-segment.current-line {
+      background: linear-gradient(180deg, var(--primary), #e5e7eb);
+    }
+
+    .path-line-segment.locked-line {
+      background: #e5e7eb;
+    }
+
+    /* Zigzag offset */
+    .path-node.offset-left { transform: translateX(-60px); }
+    .path-node.offset-right { transform: translateX(60px); }
+
+    /* ================= REWARD CHEST ================= */
+    .chest-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 8px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .chest-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, var(--gold), #FFB800);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(255, 200, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s;
+      animation: chestShine 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes chestShine {
+      0%, 100% { box-shadow: 0 4px 16px rgba(255, 200, 0, 0.4); }
+      50% { box-shadow: 0 6px 24px rgba(255, 200, 0, 0.6), 0 0 0 4px rgba(255, 200, 0, 0.15); }
+    }
+
+    .chest-circle:active { transform: scale(0.92); }
+
+    .chest-sparkle {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 16px;
+      animation: sparkle 1.5s ease-in-out infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      50% { opacity: 0.5; transform: scale(0.7) rotate(20deg); }
+    }
+
+    .chest-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--orange);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ================= TODAY'S LESSON CTA ================= */
+    .daily-lesson-cta {
+      margin-bottom: 20px;
+      animation: slideUp 0.5s ease 0.35s both;
+    }
+
+    .daily-lesson-card {
       background: linear-gradient(145deg, #58CC02, #46a302);
-      border-radius: 20px;
-      padding: 28px 24px;
+      border-radius: var(--radius-lg);
+      padding: 24px;
       color: white;
       position: relative;
       overflow: hidden;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 8px 32px rgba(88, 204, 2, 0.3);
+      box-shadow: 0 8px 28px rgba(88, 204, 2, 0.35), inset 0 -4px 0 rgba(0,0,0,0.12);
     }
 
-    .daily-card:active {
-      transform: scale(0.98);
-    }
+    .daily-lesson-card:active { transform: scale(0.97); }
 
-    .daily-card:hover {
-      box-shadow: 0 12px 40px rgba(88, 204, 2, 0.4);
-    }
-
-    .daily-card::after {
+    .daily-lesson-card::after {
       content: '';
       position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 120px;
-      height: 120px;
-      background: rgba(255,255,255,0.1);
+      top: -50px;
+      right: -50px;
+      width: 140px;
+      height: 140px;
+      background: rgba(255,255,255,0.08);
       border-radius: 50%;
     }
 
-    .daily-card::before {
+    .daily-lesson-card::before {
       content: '';
       position: absolute;
-      bottom: -20px;
-      left: -20px;
+      bottom: -30px;
+      left: -30px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+
+    .dlc-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .dlc-emoji {
+      font-size: 44px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+
+    .dlc-info h3 {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 2px;
+    }
+
+    .dlc-info p {
+      font-size: 14px;
+      opacity: 0.85;
+      font-weight: 700;
+    }
+
+    .dlc-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      color: var(--primary-darker);
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s;
+      font-family: inherit;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .dlc-btn:active { transform: scale(0.95); }
+
+    .dlc-btn .arrow {
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+
+    .daily-lesson-card:hover .dlc-btn .arrow {
+      transform: translateX(4px);
+    }
+
+    /* ================= AI TUTOR CARD ================= */
+    .ai-tutor-card {
+      background: linear-gradient(145deg, #6366F1, #8B5CF6);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.3), inset 0 -3px 0 rgba(0,0,0,0.1);
+      animation: slideUp 0.5s ease 0.4s both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-tutor-card::after {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
       width: 80px;
       height: 80px;
       background: rgba(255,255,255,0.08);
       border-radius: 50%;
     }
 
-    .daily-emoji {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
+    .ai-tutor-card:active { transform: scale(0.97); }
 
-    .daily-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .daily-desc {
-      font-size: 14px;
-      opacity: 0.9;
-      font-weight: 500;
-      margin-bottom: 20px;
-    }
-
-    .daily-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: white;
-      color: var(--primary-dark);
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.15s;
-      position: relative;
-      z-index: 1;
-    }
-
-    .daily-btn:active {
-      transform: scale(0.95);
-    }
-
-    .daily-btn .arrow {
-      font-size: 18px;
-      transition: transform 0.2s;
-    }
-
-    .daily-card:hover .daily-btn .arrow {
-      transform: translateX(4px);
-    }
-
-    /* ---- Lesson List ---- */
-    .lessons-section {
-      margin-bottom: 24px;
-    }
-
-    .lesson-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .category-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 20px;
-      margin-bottom: 4px;
-    }
-
-    .category-header:first-child {
-      margin-top: 0;
-    }
-
-    .category-icon {
-      font-size: 22px;
-    }
-
-    .category-name {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .category-line {
-      flex: 1;
-      height: 2px;
-      background: var(--border);
-      border-radius: 1px;
-    }
-
-    .lesson-item {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 18px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      transition: transform 0.2s;
-      text-decoration: none;
-    }
-
-    .lesson-item:active {
-      transform: scale(0.98);
-    }
-
-    .lesson-num {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+    .ait-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 28px;
       flex-shrink: 0;
     }
 
-    .lesson-num.completed {
-      background: var(--primary-light);
-      color: var(--primary-dark);
-    }
-
-    .lesson-num.available {
-      background: var(--blue-light);
-      color: var(--blue);
-    }
-
-    .lesson-num.locked {
-      background: #f3f4f6;
-      color: #9ca3af;
-    }
-
-    .lesson-info {
+    .ait-text {
       flex: 1;
-      min-width: 0;
     }
 
-    .lesson-info h3 {
-      font-size: 15px;
+    .ait-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .ait-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
       font-weight: 700;
+    }
+
+    .ait-arrow {
+      font-size: 20px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* ================= MOTIVATIONAL FOOTER ================= */
+    .motivational-banner {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      animation: slideUp 0.5s ease 0.45s both;
+    }
+
+    .mb-emoji {
+      font-size: 40px;
+      margin-bottom: 8px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .mb-text {
+      font-size: 16px;
+      font-weight: 800;
       color: var(--text);
-      margin-bottom: 3px;
+      line-height: 1.4;
     }
 
-    .lesson-info p {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
+    .mb-text .highlight {
+      color: var(--primary);
     }
 
-    .lesson-status {
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    /* ---- Bottom Navigation ---- */
+    /* ================= BOTTOM NAVIGATION ================= */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -529,6 +840,7 @@
       display: flex;
       justify-content: center;
       z-index: 100;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
     }
 
     .bottom-nav-inner {
@@ -542,36 +854,128 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      padding: 12px 0 8px;
+      gap: 3px;
+      padding: 10px 0 6px;
       text-decoration: none;
-      transition: color 0.2s;
       cursor: pointer;
       border: none;
       background: none;
       font-family: inherit;
+      position: relative;
+      transition: transform 0.15s;
     }
+
+    .nav-item:active { transform: scale(0.92); }
 
     .nav-item .nav-icon {
       font-size: 24px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .nav-item.active .nav-icon {
+      opacity: 1;
     }
 
     .nav-item .nav-label {
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.3px;
+      color: var(--text-muted);
+      transition: color 0.2s;
     }
 
     .nav-item.active .nav-label {
       color: var(--primary);
     }
 
-    .nav-item:not(.active) .nav-label {
-      color: var(--text-muted);
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 0 0 3px 3px;
     }
 
-    /* ---- Animations ---- */
+    /* ================= MODAL ================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      transform: scale(0.85);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-overlay.show .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.15s;
+      box-shadow: 0 4px 12px var(--primary-glow), inset 0 -3px 0 rgba(0,0,0,0.1);
+    }
+
+    .modal-btn:active { transform: scale(0.97); }
+
+    /* ================= ANIMATIONS ================= */
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -582,76 +986,172 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .animate-delay-1 { animation: slideUp 0.5s ease 0.1s both; }
-    .animate-delay-2 { animation: slideUp 0.5s ease 0.2s both; }
-    .animate-delay-3 { animation: slideUp 0.5s ease 0.3s both; }
-    .animate-delay-4 { animation: slideUp 0.5s ease 0.4s both; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    @keyframes nodeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* Floating AI button */
+    .floating-ai-btn {
+      position: fixed;
+      bottom: 84px;
+      right: 16px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #6366F1, #8B5CF6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      cursor: pointer;
+      z-index: 50;
+      border: none;
+      transition: transform 0.2s;
+      animation: floatBtn 3s ease-in-out infinite;
+    }
+
+    .floating-ai-btn:active { transform: scale(0.9); }
+
+    @keyframes floatBtn {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 380px) {
+      .status-item { padding: 4px 6px; gap: 4px; }
+      .status-item .s-value { font-size: 13px; }
+      .status-item .s-icon { font-size: 18px; }
+    }
   </style>
 </head>
 <body>
   <div class="page">
     <!-- Top Bar -->
     <div class="top-bar">
-      <div class="top-bar-logo">Edu<span>Bite</span></div>
-      <div class="top-bar-streak">
-        <span class="flame">🔥</span>
-        <span id="topStreak">0</span> day streak
+      <div class="top-bar-logo">
+        <div class="logo-mascot">🧠</div>
+        <div class="logo-text">Edu<span>Bite</span></div>
+      </div>
+      <div class="top-bar-avatar" id="avatarIcon" onclick="window.location.href='profile.html'">A</div>
+    </div>
+
+    <!-- Unified Status Bar -->
+    <div class="status-bar">
+      <div class="status-item streak">
+        <span class="s-icon">🔥</span>
+        <span class="s-value" id="streakVal">0</span>
+      </div>
+      <div class="status-item energy">
+        <span class="s-icon">⚡</span>
+        <span class="s-value" id="energyVal">20</span>
+      </div>
+      <div class="status-item coins">
+        <span class="s-icon">🪙</span>
+        <span class="s-value" id="coinsVal">0</span>
+      </div>
+      <div class="status-item score">
+        <span class="s-icon">⭐</span>
+        <span class="s-value" id="scoreVal">0</span>
+      </div>
+    </div>
+
+    <!-- XP Progress Bar -->
+    <div class="xp-bar-section">
+      <div class="xp-header">
+        <div class="xp-label">
+          <span class="xp-level-badge">⭐ Level <span id="levelVal">1</span></span>
+        </div>
+        <div class="xp-count" id="xpText">0 / 100 XP</div>
+      </div>
+      <div class="xp-track">
+        <div class="xp-fill" id="xpFill" style="width: 0%"></div>
       </div>
     </div>
 
     <!-- Greeting -->
-    <div class="greeting-section animate-delay-1">
+    <div class="greeting-section">
       <h1 class="greeting-text" id="greetingText">Hello, Learner! 👋</h1>
-      <p class="greeting-sub">Ready for today's lesson?</p>
+      <p class="greeting-sub">Keep going, <span class="motivate" id="motiveName">learner</span>! 💪</p>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-grid animate-delay-2">
-      <div class="stat-card coins-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-value" id="coinsValue">0</div>
-        <div class="stat-label">Coins</div>
+    <!-- Daily Challenge Card -->
+    <div class="daily-challenge">
+      <div class="dc-header">
+        <span class="dc-icon">🔥</span>
+        <span class="dc-title">Daily Challenge</span>
       </div>
-      <div class="stat-card score-card">
-        <div class="stat-icon">⭐</div>
-        <div class="stat-value" id="scoreValue">0</div>
-        <div class="stat-label">Total Score</div>
+      <div class="dc-desc">Solve 3 lessons today to earn bonus coins!</div>
+      <div class="dc-progress-track">
+        <div class="dc-progress-fill" id="dcFill" style="width: 0%"></div>
       </div>
+      <div class="dc-progress-text" id="dcText">0/3 completed</div>
     </div>
 
-    <!-- Energy Bar -->
-    <div class="energy-section animate-delay-2">
-      <div class="energy-card">
-        <div class="energy-header">
-          <div class="energy-label"><span class="bolt">⚡</span> Energy</div>
-          <div class="energy-count" id="energyCount">20/20</div>
+    <!-- Energy Card -->
+    <div class="energy-card">
+      <div class="energy-icon-wrap">⚡</div>
+      <div class="energy-info">
+        <div class="energy-top">
+          <span class="energy-label">Energy</span>
+          <span class="energy-count" id="energyCount">20/20</span>
         </div>
         <div class="energy-track">
           <div class="energy-fill" id="energyFill" style="width: 100%"></div>
         </div>
-        <div class="energy-refill" id="energyRefill"></div>
       </div>
     </div>
 
-    <!-- Daily Lesson CTA -->
-    <div class="daily-section animate-delay-3">
-      <h2 class="section-title">Today's Lesson</h2>
-      <div class="daily-card" id="dailyCard" onclick="startLesson()">
-        <div class="daily-emoji" id="dailyEmoji">📖</div>
-        <div class="daily-title" id="dailyTitle">Loading...</div>
-        <div class="daily-desc" id="dailyDesc">Tap to start your 5-minute lesson</div>
-        <button class="daily-btn">
+    <!-- Today's Lesson CTA -->
+    <div class="daily-lesson-cta">
+      <div class="daily-lesson-card" id="dailyCard" onclick="startLesson()">
+        <div class="dlc-top">
+          <div class="dlc-emoji" id="dailyEmoji">📖</div>
+          <div class="dlc-info">
+            <h3 id="dailyTitle">Loading...</h3>
+            <p id="dailyDesc">Tap to start your 5-minute lesson</p>
+          </div>
+        </div>
+        <button class="dlc-btn" id="startBtn">
           Start Learning <span class="arrow">→</span>
         </button>
       </div>
     </div>
 
-    <!-- Lesson List -->
-    <div class="lessons-section animate-delay-4">
-      <h2 class="section-title">All Lessons</h2>
-      <div class="lesson-list" id="lessonList"></div>
+    <!-- Learning Path -->
+    <div class="path-section">
+      <h2 class="path-section-title">🗺️ Your Learning Journey</h2>
+      <div class="learning-path" id="learningPath">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- AI Tutor Card -->
+    <div class="ai-tutor-card" onclick="window.location.href='tutor.html'">
+      <div class="ait-icon">🤖</div>
+      <div class="ait-text">
+        <div class="ait-title">Ask AI Tutor</div>
+        <div class="ait-sub">Get instant help anytime!</div>
+      </div>
+      <span class="ait-arrow">→</span>
+    </div>
+
+    <!-- Motivational Banner -->
+    <div class="motivational-banner">
+      <div class="mb-emoji">🚀</div>
+      <div class="mb-text" id="motiveText">Every lesson makes you <span class="highlight">smarter</span>. Don't stop now!</div>
     </div>
   </div>
+
+  <!-- Floating AI Button -->
+  <button class="floating-ai-btn" onclick="window.location.href='tutor.html'" title="Ask AI Tutor">🤖</button>
 
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
@@ -668,6 +1168,14 @@
         <span class="nav-icon">👤</span>
         <span class="nav-label">Profile</span>
       </a>
+      <a href="index.html" class="nav-item">
+        <span class="nav-icon">📚</span>
+        <span class="nav-label">Index</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Explore</span>
+      </a>
     </div>
   </nav>
 
@@ -675,7 +1183,7 @@
   <div class="modal-overlay" id="noEnergyModal">
     <div class="modal-card">
       <div class="modal-icon">⚡</div>
-      <h2 class="modal-title">Not Enough Energy!</h2>
+      <h2 class="modal-title">Out of Energy!</h2>
       <p class="modal-desc">You need 5 energy to start a lesson. Energy regenerates 1 point every 10 minutes. Come back soon!</p>
       <button class="modal-btn" onclick="closeNoEnergyModal()">Got It</button>
     </div>
@@ -683,12 +1191,10 @@
 
   <script>
     /* ============================================
-       HOME.HTML — Dashboard
+       HOME.HTML — Gamified Dashboard
        ============================================ */
 
-    /**
-     * Authentication guard — redirects to login if no session.
-     */
+    // --- Auth Guard ---
     function checkAuth() {
       const currentUser = localStorage.getItem('currentUser');
       if (!currentUser) {
@@ -698,9 +1204,7 @@
       return JSON.parse(currentUser);
     }
 
-    /**
-     * Gets user progress data from localStorage.
-     */
+    // --- User Progress ---
     function getUserProgress(userId) {
       const allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
       return allProgress.find(p => p.userId === userId) || {
@@ -715,13 +1219,10 @@
       };
     }
 
-    /**
-     * Regenerates energy based on time elapsed.
-     * 1 energy per 10 minutes, max 20.
-     */
+    // --- Energy Regen ---
     function regenerateEnergy(progress) {
       const MAX_ENERGY = 20;
-      const REGEN_MS = 10 * 60 * 1000; // 10 minutes per energy
+      const REGEN_MS = 10 * 60 * 1000;
       if (progress.energy >= MAX_ENERGY) {
         progress.lastEnergyRefill = Date.now();
         return progress;
@@ -731,7 +1232,6 @@
       if (gained > 0) {
         progress.energy = Math.min(MAX_ENERGY, (progress.energy || 0) + gained);
         progress.lastEnergyRefill = Date.now();
-        // Persist
         let allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
         const idx = allProgress.findIndex(p => p.userId === progress.userId);
         if (idx !== -1) { allProgress[idx] = progress; }
@@ -740,9 +1240,7 @@
       return progress;
     }
 
-    /**
-     * Deducts energy and saves to localStorage. Returns true if enough energy.
-     */
+    // --- Consume Energy ---
     function consumeEnergy(userId, amount) {
       let allProgress = JSON.parse(localStorage.getItem('progress') || '[]');
       const idx = allProgress.findIndex(p => p.userId === userId);
@@ -754,23 +1252,15 @@
       return true;
     }
 
-    /**
-     * Shows the no-energy modal.
-     */
+    // --- Modals ---
     function showNoEnergyModal() {
       document.getElementById('noEnergyModal').classList.add('show');
     }
-
-    /**
-     * Closes the no-energy modal.
-     */
     function closeNoEnergyModal() {
       document.getElementById('noEnergyModal').classList.remove('show');
     }
 
-    /**
-     * Returns the time string until next energy refill.
-     */
+    // --- Refill text ---
     function getNextRefillText(progress) {
       const MAX_ENERGY = 20;
       if ((progress.energy || 0) >= MAX_ENERGY) return '';
@@ -782,9 +1272,7 @@
       return `Next ⚡ in ${mins}m ${secs}s`;
     }
 
-    /**
-     * Determines the greeting based on time of day.
-     */
+    // --- Time greeting ---
     function getTimeGreeting() {
       const hour = new Date().getHours();
       if (hour < 12) return 'Good morning';
@@ -792,55 +1280,109 @@
       return 'Good evening';
     }
 
-    /**
-     * Extracts username from email (before @).
-     */
+    // --- Username ---
     function getUserName(email) {
       const name = email.split('@')[0];
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
 
-    /**
-     * Gets a lesson emoji based on its index.
-     */
+    // --- Lesson emojis ---
     function getLessonEmoji(index) {
       const emojis = [
-        '🌍', '🌿', '🧬', '💧', '⚡', '🧠', '⚛️',   // Science 1-7
-        '🌐', '🖥️', '🐍', '🔐', '🗄️', '☁️', '🔌',   // IT 8-14
-        '📖', '🇯🇵', '🇪🇸', '🗣️',                       // Language 15-18
-        '🐠', '🌋', '🌴'                                // Nature 19-21
+        '🌍', '🌿', '🧬', '💧', '⚡', '🧠', '⚛️',
+        '🌐', '🖥️', '🐍', '🔐', '🗄️', '☁️', '🔌',
+        '📖', '🇯🇵', '🇪🇸', '🗣️',
+        '🐠', '🌋', '🌴'
       ];
       return emojis[index % emojis.length];
     }
 
-    /**
-     * Gets category info (icon + name) for a lesson.
-     */
-    function getCategoryInfo(category) {
-      const map = {
-        'Science': { icon: '🔬', name: 'Science' },
-        'IT': { icon: '💻', name: 'Technology' },
-        'Language': { icon: '🌍', name: 'Language' },
-        'Nature': { icon: '🌿', name: 'Nature' }
-      };
-      return map[category] || { icon: '📚', name: category || 'General' };
-    }
-
-    /**
-     * Determines the next available lesson for the user.
-     */
+    // --- Next lesson ---
     function getNextLesson(lessons, completedLessons) {
       for (let i = 0; i < lessons.length; i++) {
         if (!completedLessons.includes(lessons[i].id)) {
           return lessons[i];
         }
       }
-      return null; // All lessons completed
+      return null;
     }
 
-    /**
-     * Starts the daily lesson — navigates to lesson page.
-     */
+    // --- Motivational messages ---
+    function getMotivationalMessage(name) {
+      const messages = [
+        `Every lesson makes you <span class="highlight">smarter</span>. Don't stop now!`,
+        `<span class="highlight">${name}</span> is on fire! Keep the streak going! 🔥`,
+        `One more lesson and you'll be <span class="highlight">unstoppable</span>! 💪`,
+        `Knowledge is your <span class="highlight">superpower</span>, ${name}! ⚡`,
+        `Great learners never quit. <span class="highlight">Keep going</span>! 🚀`,
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    // --- Render Learning Path ---
+    function renderLearningPath(lessons, completedLessons) {
+      const container = document.getElementById('learningPath');
+      container.innerHTML = '';
+      const pathLessons = lessons.slice(0, 12);
+
+      pathLessons.forEach((lesson, index) => {
+        const isCompleted = completedLessons.includes(lesson.id);
+        const isNext = !isCompleted && (index === 0 || completedLessons.includes(pathLessons[index - 1]?.id));
+        const isLocked = !isCompleted && !isNext;
+
+        // Draw connecting line before node (except first)
+        if (index > 0) {
+          const prevCompleted = completedLessons.includes(pathLessons[index - 1]?.id);
+          const lineDiv = document.createElement('div');
+          lineDiv.className = 'path-line-segment ' + 
+            (isCompleted ? 'completed-line' : isNext ? 'current-line' : 'locked-line');
+          container.appendChild(lineDiv);
+        }
+
+        // Add chest every 4 lessons (milestone reward)
+        if (index > 0 && index % 4 === 0) {
+          const chestDiv = document.createElement('div');
+          chestDiv.className = 'chest-node';
+          chestDiv.innerHTML = `
+            <div class="chest-circle">
+              🎁
+              <span class="chest-sparkle">✨</span>
+            </div>
+            <span class="chest-label">Milestone Reward</span>
+          `;
+          container.appendChild(chestDiv);
+
+          // Extra line after chest
+          const extraLine = document.createElement('div');
+          extraLine.className = 'path-line-segment ' + 
+            (isCompleted ? 'completed-line' : isNext ? 'current-line' : 'locked-line');
+          container.appendChild(extraLine);
+        }
+
+        // Create node
+        const nodeDiv = document.createElement('div');
+        nodeDiv.className = 'path-node';
+
+        // Zigzag offset
+        if (index % 3 === 1) nodeDiv.classList.add('offset-left');
+        else if (index % 3 === 2) nodeDiv.classList.add('offset-right');
+
+        const statusClass = isCompleted ? 'completed' : isNext ? 'current' : 'locked';
+        const emoji = getLessonEmoji(index);
+
+        nodeDiv.innerHTML = `
+          <div class="node-circle ${statusClass}" ${!isLocked ? `onclick="goToLesson('${lesson.id}')"` : ''}>
+            <span class="node-emoji">${isCompleted ? '✅' : emoji}</span>
+            ${isCompleted ? '<span class="node-check">⭐</span>' : ''}
+          </div>
+          <span class="node-title ${isLocked ? 'locked' : ''}">${lesson.title}</span>
+        `;
+
+        container.appendChild(nodeDiv);
+      });
+    }
+
+    // --- Start lesson ---
     function startLesson() {
       const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
       const user = checkAuth();
@@ -850,7 +1392,6 @@
       const nextLesson = getNextLesson(lessons, progress.completedLessons);
 
       if (nextLesson) {
-        // Check energy (costs 5 per lesson)
         if ((progress.energy || 0) < 5) {
           showNoEnergyModal();
           return;
@@ -861,9 +1402,7 @@
       }
     }
 
-    /**
-     * Navigates to a specific lesson.
-     */
+    // --- Go to specific lesson ---
     function goToLesson(lessonId) {
       const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
       const lesson = lessons.find(l => l.id === lessonId);
@@ -882,62 +1421,7 @@
       }
     }
 
-    /**
-     * Renders the lesson list with completion status.
-     */
-    function renderLessonList(lessons, completedLessons) {
-      const container = document.getElementById('lessonList');
-      container.innerHTML = '';
-
-      let currentCategory = '';
-
-      lessons.forEach((lesson, index) => {
-        // Add category header when category changes
-        const lessonCategory = lesson.category || 'General';
-        if (lessonCategory !== currentCategory) {
-          currentCategory = lessonCategory;
-          const catInfo = getCategoryInfo(lessonCategory);
-          const header = document.createElement('div');
-          header.className = 'category-header';
-          header.innerHTML = `
-            <span class="category-icon">${catInfo.icon}</span>
-            <span class="category-name">${catInfo.name}</span>
-            <span class="category-line"></span>
-          `;
-          container.appendChild(header);
-        }
-
-        const isCompleted = completedLessons.includes(lesson.id);
-        const isNext = !isCompleted && (index === 0 || completedLessons.includes(lessons[index - 1].id));
-        const isLocked = !isCompleted && !isNext;
-
-        const item = document.createElement('div');
-        item.className = 'lesson-item';
-        if (!isLocked) {
-          item.onclick = () => goToLesson(lesson.id);
-        }
-
-        const statusClass = isCompleted ? 'completed' : isNext ? 'available' : 'locked';
-        const statusIcon = isCompleted ? '✅' : isNext ? '▶️' : '🔒';
-        const subtitle = isCompleted ? 'Completed' : isNext ? 'Available now' : 'Complete previous first';
-        const emoji = getLessonEmoji(index);
-
-        item.innerHTML = `
-          <div class="lesson-num ${statusClass}">${emoji}</div>
-          <div class="lesson-info">
-            <h3>${lesson.title}</h3>
-            <p>${subtitle}</p>
-          </div>
-          <span class="lesson-status">${statusIcon}</span>
-        `;
-
-        container.appendChild(item);
-      });
-    }
-
-    /**
-     * Initializes the home page with user data.
-     */
+    // --- Initialize home ---
     function initHome() {
       const user = checkAuth();
       if (!user) return;
@@ -947,27 +1431,46 @@
       const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
       const nextLesson = getNextLesson(lessons, progress.completedLessons);
 
-      // Greeting
       const name = getUserName(user.email);
-      document.getElementById('greetingText').textContent = `${getTimeGreeting()}, ${name}! 👋`;
 
-      // Stats
-      document.getElementById('coinsValue').textContent = progress.coins || 0;
-      document.getElementById('scoreValue').textContent = progress.totalScore;
-      document.getElementById('topStreak').textContent = progress.streak;
+      // Avatar
+      document.getElementById('avatarIcon').textContent = name.charAt(0).toUpperCase();
+
+      // Greeting
+      document.getElementById('greetingText').textContent = `${getTimeGreeting()}, ${name}! 👋`;
+      document.getElementById('motiveName').textContent = name;
+
+      // Status bar
+      document.getElementById('streakVal').textContent = progress.streak;
+      document.getElementById('energyVal').textContent = progress.energy || 0;
+      document.getElementById('coinsVal').textContent = progress.coins || 0;
+      document.getElementById('scoreVal').textContent = progress.totalScore;
+
+      // XP / Level
+      const totalScore = progress.totalScore || 0;
+      const level = Math.floor(totalScore / 100) + 1;
+      const xpInLevel = totalScore % 100;
+      const xpPct = (xpInLevel / 100) * 100;
+      document.getElementById('levelVal').textContent = level;
+      document.getElementById('xpText').textContent = `${xpInLevel} / 100 XP`;
+      document.getElementById('xpFill').style.width = xpPct + '%';
 
       // Energy bar
       const energy = progress.energy || 0;
       const maxEnergy = 20;
-      const energyPercent = (energy / maxEnergy) * 100;
+      const energyPct = (energy / maxEnergy) * 100;
       document.getElementById('energyCount').textContent = `${energy}/${maxEnergy}`;
       const fillEl = document.getElementById('energyFill');
-      fillEl.style.width = energyPercent + '%';
+      fillEl.style.width = energyPct + '%';
       fillEl.className = 'energy-fill' + (energy <= 5 ? ' low' : energy <= 10 ? ' medium' : '');
-      const refillText = getNextRefillText(progress);
-      document.getElementById('energyRefill').textContent = refillText;
 
-      // Daily lesson
+      // Daily challenge
+      const dailyCount = Math.min(progress.completedLessons.length, 3);
+      const dcPct = (dailyCount / 3) * 100;
+      document.getElementById('dcFill').style.width = dcPct + '%';
+      document.getElementById('dcText').textContent = `${dailyCount}/3 completed`;
+
+      // Today's lesson CTA
       if (nextLesson) {
         const lessonIndex = lessons.findIndex(l => l.id === nextLesson.id);
         document.getElementById('dailyEmoji').textContent = getLessonEmoji(lessonIndex);
@@ -976,15 +1479,18 @@
       } else {
         document.getElementById('dailyEmoji').textContent = '🎉';
         document.getElementById('dailyTitle').textContent = 'All Lessons Complete!';
-        document.getElementById('dailyDesc').textContent = 'Amazing work! You\'ve finished all available lessons.';
-        document.querySelector('.daily-btn').textContent = 'Review Lessons';
+        document.getElementById('dailyDesc').textContent = "Amazing! You've finished all lessons.";
+        document.getElementById('startBtn').innerHTML = 'Review Lessons <span class="arrow">→</span>';
       }
 
-      // Lesson list
-      renderLessonList(lessons, progress.completedLessons);
+      // Motivational banner
+      document.getElementById('motiveText').innerHTML = getMotivationalMessage(name);
+
+      // Learning path
+      renderLearningPath(lessons, progress.completedLessons);
     }
 
-    // Refresh energy timer every second
+    // Refresh energy every second
     setInterval(() => {
       const user = checkAuth();
       if (!user) return;
@@ -992,22 +1498,20 @@
       progress = regenerateEnergy(progress);
       const energy = progress.energy || 0;
       const maxEnergy = 20;
+      document.getElementById('energyVal').textContent = energy;
       document.getElementById('energyCount').textContent = `${energy}/${maxEnergy}`;
       document.getElementById('energyFill').style.width = ((energy / maxEnergy) * 100) + '%';
       document.getElementById('energyFill').className = 'energy-fill' + (energy <= 5 ? ' low' : energy <= 10 ? ' medium' : '');
-      document.getElementById('energyRefill').textContent = getNextRefillText(progress);
     }, 1000);
 
-    // Safety: if no lessons exist, seed them directly here
+    // Safety: ensure lessons exist
     (function ensureLessonsExist() {
       const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
       if (lessons.length === 0) {
-        // Emergency seed — redirect to index.html which handles full seeding
         localStorage.removeItem('dataVersion');
         window.location.href = 'index.html';
         return;
       }
-      // Initialize
       initHome();
     })();
   </script>
