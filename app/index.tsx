@@ -32,13 +32,9 @@ export default function SplashScreen() {
 
     async function init() {
       try {
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000));
-        await Promise.race([
-          Promise.all([seedLessons(), seedQuizzes(), seedDemoUser()]),
-          timeoutPromise
-        ]);
-      } catch (err) {
-        console.warn('Seeding failed or timed out:', err);
+        await Promise.all([seedLessons(), seedQuizzes(), seedDemoUser()]);
+      } catch {
+        // Already seeded — safe to ignore
       }
 
       const session = await getSession();
