@@ -43,7 +43,7 @@ export default function QuizScreen() {
 
   useEffect(() => {
     if (questions.length > 0 && currentIndex < questions.length) {
-      const opts = shuffleArray(questions[currentIndex].options as string[]);
+      const opts = shuffleArray(questions[currentIndex].options);
       setShuffledOptions(opts);
       setOptionStates(opts.map(() => 'none'));
       setAnswered(false);
