@@ -2,15 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Dev Server (Convex + Expo Web)",
-      "type": "npm",
-      "script": "dev",
+      "label": "Start Expo Dev Server",
+      "type": "shell",
+      "command": "npx expo start",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
         "reveal": "always",
         "panel": "new"
       }
+    },
+    {
+      "label": "Start Convex Dev",
+      "type": "shell",
+      "command": "npx convex dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Start Dev (Convex + Expo)",
+      "dependsOn": ["Start Convex Dev", "Start Expo Dev Server"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }

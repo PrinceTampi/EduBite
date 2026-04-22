@@ -1,9 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-const MAX_ENERGY = 20;
-const ENERGY_PER_LESSON = 5; // cost to start a lesson
-const ENERGY_RESTORE_ON_COMPLETE = 2; // restored after finishing quiz
+const MAX_ENERGY = 25;
+const ENERGY_PER_LESSON = 3; // cost to start a lesson
+const ENERGY_RESTORE_ON_COMPLETE = 1; // restored after finishing quiz
 
 /** Get progress for a user */
 export const getProgress = query({
@@ -25,12 +25,26 @@ export const updateProgress = mutation({
     total: v.number(),
   },
   handler: async (ctx, { userId, lessonId, score, total }) => {
-    const progress = await ctx.db
+    let progress = await ctx.db
       .query("progress")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
 
-    if (!progress) throw new Error("Progress not found");
+    if (!progress) {
+      const newId = await ctx.db.insert("progress", {
+        userId,
+        completedLessons: [],
+        totalScore: 0,
+        streak: 0,
+        lastAccess: undefined,
+        energy: 20,
+        coins: 0,
+        lastEnergyRefill: Date.now(),
+      });
+      progress = (await ctx.db.get(newId))!;
+    }
+
+    if (!progress) throw new Error("Progress could not be created");
 
     const now = Date.now();
 
@@ -90,14 +104,28 @@ export const updateProgress = mutation({
 export const consumeEnergy = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
-    const progress = await ctx.db
+    let progress = await ctx.db
       .query("progress")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
 
-    if (!progress) throw new Error("Progress not found");
+    if (!progress) {
+      const newId = await ctx.db.insert("progress", {
+        userId,
+        completedLessons: [],
+        totalScore: 0,
+        streak: 0,
+        lastAccess: undefined,
+        energy: 20,
+        coins: 0,
+        lastEnergyRefill: Date.now(),
+      });
+      progress = (await ctx.db.get(newId))!;
+    }
+
+    if (!progress) return { success: false, reason: "PROGRESS_NOT_FOUND" };
     if ((progress.energy || 0) < ENERGY_PER_LESSON) {
-      throw new Error("Not enough energy");
+      return { success: false, reason: "NOT_ENOUGH_ENERGY" };
     }
 
     await ctx.db.patch(progress._id, {
@@ -111,10 +139,24 @@ export const consumeEnergy = mutation({
 export const regenerateEnergy = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
-    const progress = await ctx.db
+    let progress = await ctx.db
       .query("progress")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
+
+    if (!progress) {
+      const newId = await ctx.db.insert("progress", {
+        userId,
+        completedLessons: [],
+        totalScore: 0,
+        streak: 0,
+        lastAccess: undefined,
+        energy: 20,
+        coins: 0,
+        lastEnergyRefill: Date.now(),
+      });
+      progress = await ctx.db.get(newId);
+    }
 
     if (!progress) return;
     if ((progress.energy || 0) >= MAX_ENERGY) return;
