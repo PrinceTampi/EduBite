@@ -1,0 +1,10 @@
+{
+  "name": "edubite-root",
+  "private": true,
+  "scripts": {
+    "dev": "cd EduBIte && npm run dev"
+  },
+  "dependencies": {
+    "convex": "^1.35.1"
+  }
+}

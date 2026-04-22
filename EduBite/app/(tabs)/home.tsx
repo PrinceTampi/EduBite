@@ -1,13 +1,17 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  RefreshControl, Modal, Animated,
+  RefreshControl, Modal, Animated, Dimensions, Platform, ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { getSession, Session } from '@/lib/session';
 import { Id } from '@/convex/_generated/dataModel';
+
+const { width } = Dimensions.get('window');
 
 const CATEGORY_ICONS: Record<string, string> = {
   Science: '🔬', IT: '💻', Language: '🌍', Nature: '🌿',
@@ -31,9 +35,211 @@ function getUserName(email: string) {
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
+
+
+/* ============ Inline Quiz Component ============ */
+interface InlineQuizProps {
+  lessonId: number;
+  userId: Id<'users'>;
+  onClose: () => void;
+  onComplete: (score: number, xp: number, coins: number) => void;
+}
+
+export function InlineQuiz({ lessonId, userId, onClose, onComplete }: InlineQuizProps) {
+  const quizzes = useQuery(api.quizzes.getQuizzesByLesson, { lessonId });
+  const updateProgress = useMutation(api.progress.updateProgress);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+  const [earnData, setEarnData] = useState<{ xp?: number; coins?: number } | null>(null);
+
+  // Animations
+  const [bounceAnim] = useState(new Animated.Value(1));
+  const [slideAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    // Slide in new question
+    slideAnim.setValue(50);
+    Animated.spring(slideAnim, {
+      toValue: 0,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  }, [currentIndex]);
+
+  if (quizzes === undefined) {
+    return (
+      <View style={quizStyles.loadingContainer}>
+        <ActivityIndicator size="large" color="#58CC02" />
+        <Text style={quizStyles.loadingText}>Loading Quiz...</Text>
+      </View>
+    );
+  }
+
+  if (quizzes.length === 0) {
+    return (
+      <View style={quizStyles.loadingContainer}>
+        <Text style={quizStyles.loadingText}>No questions found.</Text>
+        <TouchableOpacity style={quizStyles.btnPrimary} onPress={onClose}>
+          <Text style={quizStyles.btnText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const currentQuiz = quizzes[currentIndex];
+
+  const handleSelectOption = (option: string) => {
+    if (selectedOption) return; // Prevent double clicking
+    setSelectedOption(option);
+
+    const isCorrect = option === currentQuiz.correctAnswer;
+    
+    // Animate answer feedback
+    Animated.sequence([
+      Animated.timing(bounceAnim, { toValue: isCorrect ? 1.05 : 0.95, duration: 150, useNativeDriver: true }),
+      Animated.spring(bounceAnim, { toValue: 1, friction: 4, useNativeDriver: true })
+    ]).start();
+
+    if (isCorrect) {
+      setScore(s => s + 1);
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < quizzes.length - 1) {
+      setSelectedOption(null);
+      setCurrentIndex(i => i + 1);
+    } else {
+      // Quiz Finished
+      setIsFinished(true);
+      const totalScore = score + (selectedOption === currentQuiz.correctAnswer ? 1 : 0);
+      try {
+        const result = await updateProgress({
+          userId,
+          lessonId,
+          score: totalScore * 10,
+          total: quizzes.length * 10,
+        });
+        setEarnData({ xp: totalScore * 10, coins: result.coinsEarned });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  if (isFinished) {
+    return (
+      <Animated.View style={[quizStyles.container, { transform: [{ scale: bounceAnim }] }]}>
+        <Text style={quizStyles.emojiLarge}>🎉</Text>
+        <Text style={quizStyles.title}>Lesson Complete!</Text>
+        
+        {earnData ? (
+          <View style={quizStyles.statsRow}>
+            <View style={quizStyles.statBox}>
+              <Text style={quizStyles.statIcon}>⭐</Text>
+              <Text style={quizStyles.statVal}>+{earnData.xp} XP</Text>
+            </View>
+            <View style={quizStyles.statBox}>
+              <Text style={quizStyles.statIcon}>🪙</Text>
+              <Text style={quizStyles.statVal}>+{earnData.coins} Coins</Text>
+            </View>
+          </View>
+        ) : (
+          <ActivityIndicator color="#58CC02" style={{ marginVertical: 20 }} />
+        )}
+
+        <TouchableOpacity 
+          style={[quizStyles.btnPrimary, { marginTop: 20, width: '100%' }]} 
+          onPress={() => onComplete(score, earnData?.xp || 0, earnData?.coins || 0)}
+        >
+          <Text style={quizStyles.btnText}>Continue Learning</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
+
+  const progressPct = ((currentIndex) / quizzes.length) * 100;
+
+  return (
+    <Animated.View style={[quizStyles.container, { transform: [{ translateX: slideAnim }] }]}>
+      <View style={quizStyles.header}>
+        <TouchableOpacity onPress={onClose} style={quizStyles.closeBtn}>
+          <Text style={quizStyles.closeBtnText}>✕</Text>
+        </TouchableOpacity>
+        <View style={quizStyles.progressTrackWrapper}>
+          <View style={quizStyles.progressTrack}>
+            <LinearGradient
+              colors={['#58CC02', '#7de836']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[quizStyles.progressFill, { width: `${progressPct}%` }]}
+            />
+          </View>
+        </View>
+      </View>
+
+      <Text style={quizStyles.questionText}>{currentQuiz.question}</Text>
+
+      <View style={quizStyles.optionsList}>
+        {currentQuiz.options.map(opt => {
+          const isSelected = selectedOption === opt;
+          const isCorrect = opt === currentQuiz.correctAnswer;
+          const showSuccess = isSelected && isCorrect;
+          const showError = isSelected && !isCorrect;
+
+          let optionStyle: any = quizStyles.optionCard;
+          let textStyle: any = quizStyles.optionText;
+
+          if (selectedOption) {
+            if (isCorrect) {
+              optionStyle = [quizStyles.optionCard, quizStyles.optionCorrect];
+              textStyle = [quizStyles.optionText, quizStyles.textCorrect];
+            } else if (showError) {
+              optionStyle = [quizStyles.optionCard, quizStyles.optionWrong];
+              textStyle = [quizStyles.optionText, quizStyles.textWrong];
+            } else {
+              optionStyle = [quizStyles.optionCard, { opacity: 0.5 }];
+            }
+          }
+
+          return (
+            <TouchableOpacity 
+              key={opt}
+              style={optionStyle}
+              onPress={() => handleSelectOption(opt)}
+              activeOpacity={0.8}
+            >
+              <Text style={textStyle}>{opt}</Text>
+              {selectedOption && isCorrect && <Text style={quizStyles.statusIcon}>✓</Text>}
+              {showError && <Text style={quizStyles.statusIcon}>✕</Text>}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <View style={quizStyles.footer}>
+        <TouchableOpacity 
+          style={[quizStyles.btnPrimary, !selectedOption && quizStyles.btnDisabled]} 
+          onPress={handleNext}
+          disabled={!selectedOption}
+        >
+          <Text style={quizStyles.btnText}>{currentIndex === quizzes.length - 1 ? 'Finish' : 'Next'}</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+
+/* ============ MAIN HOME SCREEN ============ */
+
 export default function HomeScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [noEnergyModal, setNoEnergyModal] = useState(false);
+  const [inlineLessonId, setInlineLessonId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const regenEnergy = useMutation(api.progress.regenerateEnergy);
@@ -69,8 +275,12 @@ export default function HomeScreen() {
   async function startLesson(lessonId: number) {
     if (!session?.userId) return;
     try {
-      await consumeEnergy({ userId: session.userId as Id<'users'> });
-      router.push({ pathname: '/lesson', params: { lessonId: lessonId.toString() } });
+      const result = await consumeEnergy({ userId: session.userId as Id<'users'> });
+      if (!result.success) {
+        setNoEnergyModal(true);
+      } else {
+        setInlineLessonId(lessonId); // OPEN INLINE QUIZ
+      }
     } catch {
       setNoEnergyModal(true);
     }
@@ -224,6 +434,30 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+      {/* INLINE QUIZ MODAL */}
+      <Modal 
+        visible={inlineLessonId !== null} 
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setInlineLessonId(null)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#000000A0' }}>
+          {inlineLessonId !== null && session?.userId && (
+            <View style={{ flex: 1, marginTop: Platform.OS === 'ios' ? 40 : 60, borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden' }}>
+              <InlineQuiz
+                lessonId={inlineLessonId}
+                userId={session.userId as Id<'users'>}
+                onClose={() => setInlineLessonId(null)}
+                onComplete={(score, xp, coins) => {
+                  setInlineLessonId(null);
+                  onRefresh(); // Refresh home data immediately
+                }}
+              />
+            </View>
+          )}
+        </View>
+      </Modal>
+
     </>
   );
 }
@@ -284,4 +518,171 @@ const styles = StyleSheet.create({
   modalDesc: { fontSize: 14, color: '#6b7280', fontWeight: '500', lineHeight: 22, textAlign: 'center', marginBottom: 24 },
   modalBtn: { width: '100%', backgroundColor: '#58CC02', borderRadius: 12, padding: 14, alignItems: 'center' },
   modalBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+});
+
+const quizStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 16,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeBtnText: {
+    fontSize: 24,
+    color: '#9ca3af',
+    fontWeight: '600',
+  },
+  progressTrackWrapper: {
+    flex: 1,
+  },
+  progressTrack: {
+    height: 12,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 6,
+  },
+  questionText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1a1a2e',
+    marginBottom: 32,
+    lineHeight: 30,
+  },
+  optionsList: {
+    flex: 1,
+    gap: 12,
+  },
+  optionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 16,
+    backgroundColor: '#fff',
+  },
+  optionCorrect: {
+    backgroundColor: '#d7ffb8',
+    borderColor: '#58CC02',
+  },
+  optionWrong: {
+    backgroundColor: '#ffebeb',
+    borderColor: '#FF4B4B',
+  },
+  optionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4b5563',
+  },
+  textCorrect: {
+    color: '#46a302',
+  },
+  textWrong: {
+    color: '#d32f2f',
+  },
+  statusIcon: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  footer: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 2,
+    borderColor: '#f9fafb',
+  },
+  btnPrimary: {
+    backgroundColor: '#58CC02',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#58CC02',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnDisabled: {
+    backgroundColor: '#e5e7eb',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  emojiLarge: {
+    fontSize: 64,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  statBox: {
+    backgroundColor: '#f9fafb',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    width: '45%',
+  },
+  statIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  statVal: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1a1a2e',
+  },
 });

@@ -43,7 +43,7 @@ export default function QuizScreen() {
 
   useEffect(() => {
     if (questions.length > 0 && currentIndex < questions.length) {
-      const opts = shuffleArray(questions[currentIndex].options);
+      const opts = shuffleArray(questions[currentIndex].options) as string[];
       setShuffledOptions(opts);
       setOptionStates(opts.map(() => 'none'));
       setAnswered(false);
@@ -77,11 +77,8 @@ export default function QuizScreen() {
   function nextQuestion() {
     const next = currentIndex + 1;
     if (next >= questions.length) {
-      // Go to result
-      router.replace({
-        pathname: '/result',
-        params: { score: (isCorrect ? score : score).toString(), total: questions.length.toString(), lessonId: numericId.toString() },
-      });
+      // Quiz finished — go back to home
+      router.back();
     } else {
       // Animate out and change question
       Animated.timing(questionFade, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
