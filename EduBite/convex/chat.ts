@@ -38,13 +38,12 @@ export const clearChatHistory = mutation({
     const messages = await ctx.db
       .query("chatMessages")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .take(100);
+      .collect();
     for (const msg of messages) {
       await ctx.db.delete(msg._id);
     }
   },
 });
-
 
 /** Generate AI Response via Grok AI (xAI) */
 export const generateResponse = action({
