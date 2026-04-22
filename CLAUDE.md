@@ -1,4 +1,5 @@
 <!-- convex-ai-start -->
+
 This project uses [Convex](https://convex.dev) as its backend.
 
 <<<<<<< HEAD
@@ -8,4 +9,5 @@ When working on Convex code, **always read `EduBIte\convex/_generated/ai/guideli
 >>>>>>> 606513b5995788518e95fea658bf31c7f065fbc8
 
 Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
+
 <!-- convex-ai-end -->
