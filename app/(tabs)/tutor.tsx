@@ -4,9 +4,9 @@ import {
   KeyboardAvoidingView, Platform, Modal, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { getSession, getGeminiKey, saveGeminiKey, clearGeminiKey, Session } from '@/lib/session';
+import { getSession, getXaiKey, saveXaiKey, clearXaiKey, Session } from '@/lib/session';
 import { Id } from '@/convex/_generated/dataModel';
 
 const SMART_RESPONSES: Record<string, string> = {
@@ -46,11 +46,11 @@ function getSmartResponse(msg: string): string {
   if (lower.includes('help') || lower.includes('what can you')) {
     return '👋 I can help with:\n\n📖 Explain lesson topics\n🧪 Answer science questions\n💻 IT & coding concepts\n🌍 Language basics\n🌿 Nature topics\n🎯 Quiz you on what you know\n\nJust ask! 😊';
   }
-  return '🤔 That\'s interesting!\n\nI work best with topics from your lessons. Try asking about **Science**, **Technology**, **Language**, or **Nature**.\n\n💡 **Tip:** Add your free Gemini API key in settings ⚙️ for unlimited AI responses!';
+  return '🤔 That\'s interesting!\n\nI work best with topics from your lessons. Try asking about **Science**, **Technology**, **Language**, or **Nature**.\n\n💡 **Tip:** Add your free xAI API key in settings ⚙️ for unlimited Grok responses!';
 }
 
-async function callGeminiAPI(message: string, apiKey: string, history: Array<{role: string; content: string}>): Promise<string> {
-  const systemPrompt = `You are "EduBite AI", a friendly and encouraging AI tutor for a microlearning app. You help students understand topics across Science, IT/Technology, Language, and Nature.
+async function callXaiAPI(message: string, apiKey: string, history: Array<{role: string; content: string}>): Promise<string> {
+  const systemPrompt = `You are "EduBite AI", powered by Grok. You are a friendly and encouraging AI tutor for a microlearning app. You help students understand topics across Science, IT/Technology, Language, and Nature.
 
 Your teaching style:
 - Use simple, clear explanations suitable for beginners
@@ -60,22 +60,26 @@ Your teaching style:
 - If asked to quiz, create 1-2 multiple choice questions
 - Encourage the student and celebrate their curiosity`;
 
-  const contents = [
+  const messages = [
+    { role: "system", content: systemPrompt },
     ...history.slice(-6).map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }],
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: h.content,
     })),
-    { role: 'user', parts: [{ text: message }] },
+    { role: 'user', content: message },
   ];
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetch("https://api.x.ai/v1/chat/completions", {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents,
-      generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
+      messages: messages,
+      model: "grok-beta",
+      stream: false,
+      temperature: 0.7,
     }),
   });
 
@@ -84,7 +88,7 @@ Your teaching style:
     throw new Error((err as any).error?.message || 'API request failed');
   }
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "I didn't get a response. Try asking differently!";
+  return data.choices?.[0]?.message?.content || "I didn't get a response from Grok. Try asking differently!";
 }
 
 interface ChatMessage {
@@ -99,7 +103,7 @@ export default function TutorScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [apiModal, setApiModal] = useState(false);
-  const [geminiKey, setGeminiKey] = useState('');
+  const [xaiKey, setXaiKey] = useState('');
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const flatListRef = useRef<FlatList>(null);
@@ -110,13 +114,14 @@ export default function TutorScreen() {
   );
   const saveMessage = useMutation(api.chat.saveMessage);
   const clearHistory = useMutation(api.chat.clearChatHistory);
+  const generateResponseAction = useAction(api.chat.generateResponse);
 
   useEffect(() => {
     getSession().then((s) => {
       if (!s) { router.replace('/(auth)/login'); return; }
       setSession(s);
     });
-    getGeminiKey().then(setGeminiKey);
+    getXaiKey().then(setXaiKey);
   }, []);
 
   useEffect(() => {
@@ -144,18 +149,25 @@ export default function TutorScreen() {
 
     try {
       let response: string;
-      if (geminiKey) {
-        response = await callGeminiAPI(msg, geminiKey, localMessages);
+      if (xaiKey) {
+        response = await callXaiAPI(msg, xaiKey, localMessages);
       } else {
-        await new Promise(r => setTimeout(r, 800 + Math.random() * 800));
-        response = getSmartResponse(msg);
+        // Try server-side Convex Action first
+        response = await generateResponseAction({ message: msg, history: localMessages });
+        
+        // If the server doesn't have an API key, we fallback to smart local response
+        if (response.includes("XAI_API_KEY is not configured")) {
+           await new Promise(r => setTimeout(r, 800 + Math.random() * 800));
+           response = getSmartResponse(msg);
+        }
       }
 
       const aiMsg: ChatMessage = { role: 'ai', content: response };
       setLocalMessages(prev => [...prev, aiMsg]);
       await saveMessage({ userId: session.userId as Id<'users'>, role: 'ai', content: response });
     } catch (e: any) {
-      const errMsg: ChatMessage = { role: 'ai', content: 'Sorry, I had trouble with that. Please check your API key in settings ⚙️ and try again!' };
+      console.warn("AI Generation failed:", e);
+      const errMsg: ChatMessage = { role: 'ai', content: 'Sorry, I had trouble with that. Make sure you are online or try again!' };
       setLocalMessages(prev => [...prev, errMsg]);
     }
 
@@ -165,11 +177,11 @@ export default function TutorScreen() {
 
   async function handleSaveApiKey() {
     if (apiKeyInput.trim()) {
-      await saveGeminiKey(apiKeyInput.trim());
-      setGeminiKey(apiKeyInput.trim());
+      await saveXaiKey(apiKeyInput.trim());
+      setXaiKey(apiKeyInput.trim());
     } else {
-      await clearGeminiKey();
-      setGeminiKey('');
+      await clearXaiKey();
+      setXaiKey('');
     }
     setApiModal(false);
   }
@@ -228,7 +240,7 @@ export default function TutorScreen() {
           <View style={styles.statusRow}>
             <View style={styles.statusDot} />
             <Text style={styles.statusText}>
-              {geminiKey ? 'Gemini AI Connected' : 'Smart Mode Active'}
+              {xaiKey ? 'Grok AI Connected' : 'Smart Mode Active'}
             </Text>
           </View>
         </View>
@@ -238,7 +250,7 @@ export default function TutorScreen() {
               <Text style={{ fontSize: 16 }}>🗑️</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.actionBtn} onPress={() => { setApiKeyInput(geminiKey); setApiModal(true); }}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => { setApiKeyInput(xaiKey); setApiModal(true); }}>
             <Text style={{ fontSize: 18 }}>⚙️</Text>
           </TouchableOpacity>
         </View>
@@ -329,24 +341,24 @@ export default function TutorScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalIcon}>🔑</Text>
-            <Text style={styles.modalTitle}>Connect AI</Text>
-            <Text style={styles.modalSub}>Add your Gemini API key for unlimited AI responses. Without a key, you get smart built-in responses.</Text>
+            <Text style={styles.modalTitle}>Connect Grok AI</Text>
+            <Text style={styles.modalSub}>Add your xAI API key for unlimited Grok responses. Without a key, you get smart built-in responses.</Text>
 
-            <View style={[styles.statusBadge, geminiKey ? styles.statusConnected : styles.statusDisconnected]}>
-              <Text style={styles.statusBadgeText}>{geminiKey ? '✅ API key connected' : '⚪ No key — smart mode'}</Text>
+            <View style={[styles.statusBadge, xaiKey ? styles.statusConnected : styles.statusDisconnected]}>
+              <Text style={styles.statusBadgeText}>{xaiKey ? '✅ API key connected' : '⚪ No key — smart mode'}</Text>
             </View>
 
-            <Text style={styles.modalLabel}>GEMINI API KEY</Text>
+            <Text style={styles.modalLabel}>XAI API KEY</Text>
             <TextInput
               style={styles.modalInput}
               value={apiKeyInput}
               onChangeText={setApiKeyInput}
-              placeholder="AIzaSy..."
+              placeholder="xai-..."
               placeholderTextColor="#9ca3af"
               secureTextEntry
               autoCapitalize="none"
             />
-            <Text style={styles.modalHint}>Get a free key at aistudio.google.com/apikey</Text>
+            <Text style={styles.modalHint}>Get a key at console.x.ai</Text>
 
             <TouchableOpacity style={styles.modalPrimaryBtn} onPress={handleSaveApiKey}>
               <Text style={styles.modalPrimaryBtnText}>Save API Key</Text>

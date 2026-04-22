@@ -18,9 +18,6 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="lesson" />
-        <Stack.Screen name="quiz" />
-        <Stack.Screen name="result" />
       </Stack>
       <StatusBar style="auto" />
     </ConvexProvider>

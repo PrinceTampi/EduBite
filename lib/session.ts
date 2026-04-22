@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SESSION_KEY = 'edubite_session';
-const GEMINI_KEY = 'edubite_gemini_key';
+const XAI_KEY = 'edubite_xai_key';
 
 export interface Session {
   userId: string;
@@ -22,14 +22,14 @@ export async function clearSession(): Promise<void> {
   await AsyncStorage.removeItem(SESSION_KEY);
 }
 
-export async function saveGeminiKey(key: string): Promise<void> {
-  await AsyncStorage.setItem(GEMINI_KEY, key);
+export async function saveXaiKey(key: string): Promise<void> {
+  await AsyncStorage.setItem(XAI_KEY, key);
 }
 
-export async function getGeminiKey(): Promise<string> {
-  return (await AsyncStorage.getItem(GEMINI_KEY)) || '';
+export async function getXaiKey(): Promise<string> {
+  return (await AsyncStorage.getItem(XAI_KEY)) || '';
 }
 
-export async function clearGeminiKey(): Promise<void> {
-  await AsyncStorage.removeItem(GEMINI_KEY);
+export async function clearXaiKey(): Promise<void> {
+  await AsyncStorage.removeItem(XAI_KEY);
 }
